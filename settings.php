@@ -51,7 +51,7 @@ if ($hassiteconfig) {
     $ADMIN->add('hyperplanningsync_menu', $hyperplanningsynclog);
 
     $hyperplanningsyncsettings = new admin_settingpage(
-            'tool_hyperplanningsync:settings',
+            'tool_hyperplanningsync_settings',
             get_string('hyperplanningsync:settings', 'tool_hyperplanningsync'),
             'tool/hyperplanningsync:manage');
 
