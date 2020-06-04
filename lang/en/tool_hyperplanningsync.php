@@ -78,6 +78,12 @@ $string['settings:field_othergroups'] = 'Default name for the other groups field
 $string['settings:field_othergroups_config'] = 'This is the field name in the header of the csv';
 $string['settings:moodle_idfield'] = 'Moodle ID field';
 $string['settings:moodle_idfield_config'] = 'Which Moodle ID field to map against?';
+$string['settings:group_transform_pattern'] = 'Group name (pattern)';
+$string['settings:group_transform_pattern_config'] = 'Regexp for group name (pattern) transformation,
+ if any (leave it empty if you don\'t want any)';
+$string['settings:group_transform_replacement'] = 'Regexp replacement for group name';
+$string['settings:group_transform_replacement_config'] = 'Regexp replacement for group name,
+ if any (leave it empty if you don\'t want any)';
 $string['upload:btn'] = 'Upload';
 $string['upload:cohort'] = 'Cohort field name';
 $string['upload:delimiter'] = 'CSV delimiter';
@@ -89,6 +95,8 @@ $string['upload:idfield'] = 'ID field name';
 $string['upload:maingroup'] = 'Main group field name';
 $string['upload:moodle_idfield'] = 'Moodle ID field';
 $string['upload:othergroups'] = 'Other groups field name';
+$string['upload:group_transform_pattern'] = 'Regexp for group name (pattern)';
+$string['upload:group_transform_replacement'] = 'Regexp replacement for group name';
 $string['viewlog:heading'] = 'Import log';
 $string['viewlog:results'] = 'Search results ({$a})';
 

@@ -42,8 +42,11 @@ $mform = new upload_form();
 if ($formdata = $mform->get_data()) {
     $returnurl = $PAGE->url;
 
+    // Filename.
+    $content = $mform->get_file_content('userfile');
+    
     // Validate and import.
-    if ($importid = tool_hyperplanningsync_import($mform, $formdata, $returnurl)) {
+    if ($importid = tool_hyperplanningsync_import($content, $formdata, $returnurl)) {
 
         // Continue to form2.
         $previewurl = new moodle_url('/admin/tool/hyperplanningsync/preview.php', array('importid' => $importid));

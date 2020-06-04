@@ -1,0 +1,8 @@
+Nom,Prénom,Adresse e-mail,Né(e) le,Sexe,Promotions,TD,Regroupements,Options,Famille
+etudiant1,etudiant1,etudiant1.etudiant1@email.com,01/01/01,Féminin,A1,< A1 > gr8.1,"[ A1 gr4.1] ,  [ A1 sans gr8.2] ,  [ A1 sans gr8.3] ,  [ A1 sans gr8.4] ,  [ A1 sans gr8.5] ,  [ A1 sans gr8.6] ,  [ A1 sans gr8.7] ,  [ A1 sans gr8.8]",,
+etudiant2,etudiant2,etudiant2.etudiant2@email.com,01/01/01,Féminin,A1,< A1 > gr8.1,"[ A1 gr4.1] ,  [ A1 sans gr8.2] ,  [ A1 sans gr8.3] ,  [ A1 sans gr8.4] ,  [ A1 sans gr8.5] ,  [ A1 sans gr8.6] ,  [ A1 sans gr8.7] ,  [ A1 sans gr8.8]",,
+etudiant26,etudiant26,etudiant26.etudiant26@email.com,01/01/01,Féminin,A2,< A2 > gr8.4,"[ A2 gr4.2] ,  [ A2 sans gr8.1] ,  [ A2 sans gr8.2] ,  [ A2 sans gr8.3] ,  [ A2 sans gr8.5] ,  [ A2 sans gr8.6] ,  [ A2 sans gr8.7] ,  [ A2 sans gr8.8]",,
+etudiant112,etudiant112,etudiant112.etudiant112@email.com,01/01/01,Féminin,A3,< A3 > gr8.1.a,"[ A3 gr4.1] ,  [ A3 gr8.1]",,
+etudiant117,etudiant117,etudiant117.etudiant117@email.com,01/01/01,Féminin,A4,< A4 > grHp 35,"[ A4 gr 08. c] ,  [ A4 gr 8.3_C1]",,
+etudiantwithoutgroup,etudiantwithoutgroup,etudiantnonexisting.etudiant@email.com,01/01/01,Féminin,,,"",,
+etudiantnonexisting,etudiant148,etudiantnonexisting.etudiant148@email.com,01/01/01,Féminin,A4,< A4 > grHp 46,"[ A4 gr 10. d] ,  [ A4 gr 8.4_D2]",,

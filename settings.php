@@ -68,15 +68,31 @@ if ($hassiteconfig) {
             'email', // Default.
             $options));
 
+    // Replacement and patterns for group name (see preg_replace).
+    $hyperplanningsyncsettings->add(new admin_setting_configtext(
+        'tool_hyperplanningsync/group_transform_pattern', // Group name transformation as a regexp
+        get_string('settings:group_transform_pattern', 'tool_hyperplanningsync'), // Label.
+        get_string('settings:group_transform_pattern', 'tool_hyperplanningsync'), // Help.
+        '' // Default no pattern.
+    ));
+
+    $hyperplanningsyncsettings->add(new admin_setting_configtext(
+        'tool_hyperplanningsync/group_transform_replacement', // Group name replacement (as a regexp).
+        get_string('settings:group_transform_replacement', 'tool_hyperplanningsync'), // Label.
+        get_string('settings:group_transform_replacement', 'tool_hyperplanningsync'), // Help.
+        '' // Default : no replacement.
+    ));
+
     $fields = tool_hyperplanningsync_get_fields();
 
+    $fields = tool_hyperplanningsync_get_fields();
     foreach ($fields as $fieldname => $default) {
         $hyperplanningsyncsettings->add(new admin_setting_configtext(
                 'tool_hyperplanningsync/field_' . $fieldname, // Config name.
                 get_string('settings:field_' . $fieldname, 'tool_hyperplanningsync'), // Label.
                 get_string('settings:field_' . $fieldname . '_config', 'tool_hyperplanningsync'), // Help.
                 $default, // Default.
-                PARAM_ALPHANUMEXT)); // Param type.
+                PARAM_RAW)); // Param type.
     }
 
     $ADMIN->add('hyperplanningsync_menu', $hyperplanningsyncsettings);

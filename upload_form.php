@@ -25,11 +25,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/formslib.php');
+require_once($CFG->libdir . '/formslib.php');
 
 class upload_form extends moodleform {
 
-    public function definition () {
+    public function definition() {
         $mform = $this->_form;
 
         $mform->addElement('header', 'form_heading', get_string('upload:heading:file', 'tool_hyperplanningsync'));
@@ -60,8 +60,18 @@ class upload_form extends moodleform {
         );
         $mform->addElement('select', 'moodle_idfield', get_string('upload:moodle_idfield', 'tool_hyperplanningsync'), $options);
         $mform->setType('moodle_idfield', PARAM_TEXT);
-        $mform->setDefault('moodle_idfield', get_config('moodle_idfield', 'tool_hyperplanningsync'));
+        $mform->setDefault('moodle_idfield', get_config('tool_hyperplanningsync', 'moodle_idfield'));
         $mform->addRule('moodle_idfield', get_string('required'), 'required', null, 'client');
+
+        $mform->addElement('text', 'group_transform_pattern',
+            get_string('upload:group_transform_pattern', 'tool_hyperplanningsync'));
+        $mform->setType('group_transform_pattern', PARAM_TEXT);
+        $mform->setDefault('group_transform_pattern', get_config('tool_hyperplanningsync', 'group_transform_pattern'));
+
+        $mform->addElement('text', 'group_transform_replacement',
+            get_string('upload:group_transform_replacement', 'tool_hyperplanningsync'));
+        $mform->setType('group_transform_replacement', PARAM_TEXT);
+        $mform->setDefault('group_transform_replacement', get_config('tool_hyperplanningsync', group_transform_replacement));
 
         $fields = tool_hyperplanningsync_get_fields();
 

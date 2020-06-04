@@ -1,0 +1,18 @@
+id,name,idnumber,description,descriptionformat,parent,sortorder,coursecount,visible,visibleold,timemodified,depth,path,theme
+126,Semestre S7,NULL,,1,133,210000,8,1,1,0,3,/124/133/126,NULL
+127,Semestre S5,,,1,132,180000,5,1,1,1551801843,3,/124/132/127,NULL
+128,Semestre S6,NULL,,1,132,190000,6,1,1,0,3,/124/132/128,NULL
+129,Semestre S8,NULL,,1,133,220000,6,1,1,0,3,/124/133/129,NULL
+130,Semestre S9,NULL,,1,134,240000,7,1,1,0,3,/124/134/130,NULL
+131,Semestre S10,NULL,,1,134,250000,7,1,1,0,3,/124/134/131,NULL
+132,Année 1,NULL,,1,124,170000,0,1,1,0,2,/124/132,NULL
+133,Année 2,NULL,,1,124,200000,0,1,1,0,2,/124/133,NULL
+134,Année 3,NULL,,1,124,230000,0,1,1,0,2,/124/134,NULL
+176,Année 4,NULL,,1,124,260000,0,1,1,0,2,/124/176,NULL
+177,Animaux de production et Santé publique vétérinaire,NULL,,1,176,270000,7,1,1,1482855198,3,/124/176/177,NULL
+178,Carnivores domestiques et équidés,NULL,,1,176,280000,6,1,1,0,3,/124/176/178,NULL
+179,Espace étudiants,NULL,,1,236,420000,4,1,1,1412507200,2,/236/179,NULL
+183,Espace Formations complémentaires,NULL,,1,0,380000,1,1,1,0,1,/183,NULL
+192,Dominante Sciences Cliniques des Animaux de Rente (Bovine),NULL,,1,155,300000,16,1,1,0,3,/124/155/192,NULL
+193,Dominante Sciences Cliniques des Animaux de Compagnie (Canine),,,1,155,310000,11,1,1,1551717569,3,/124/155/193,NULL
+194,Dominante Sciences Cliniques des Equidés (Equine),NULL,,1,155,320000,5,1,1,0,3,/124/155/194,NULL

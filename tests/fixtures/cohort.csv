@@ -1,0 +1,11 @@
+"id","contextid","name","idnumber","description","descriptionformat","visible","component","timecreated","timemodified","theme"
+"1","1","A1","A1",,"1","1",,"1408526754","1408526843",NULL
+"2","1","A3","A3",,"1","1",,"1408526765","1408526857",NULL
+"3","1","A2","A2",,"1","1",,"1408526775","1408526850",NULL
+"4","1","A4","A4",,"1","1",,"1408526782","1408526864",NULL
+"5","1","A5-Autre","A5-Autre",,"1","1",,"1408526788","1408546049",NULL
+"6","1","Mobilite entrante","Mobilité entrante",,"1","1",,"1408526824","1502983445",NULL
+"9","1","Enseignants","Enseignants",,"1","1",,"1408550569","1484552180",NULL
+"10","1","A5-Bovine","A5-Bovine",,"1","1",,"1408550645","1408550701",NULL
+"11","1","A5-Canine","A5-Canine","<p>Enide PARAN (césure médicale) est toujours présente dans cette cohorte (quid?)</p>","1","1",,"1408550659","1564400609",NULL
+"12","1","A5-Equine","A5-Equine",,"1","1",,"1408550675","1408550675",NULL

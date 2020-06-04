@@ -66,22 +66,20 @@ function tool_hyperplanningsync_get_fields($formdata = null) {
  *
  * @global moodle_database $DB
  * @global stdClass $USER
- * @param \moodleform $mform
+ * @param string $content CSV file content
  * @param stdClass $formdata
  * @param \moodle_url $returnurl
  * @return int importid
  */
-function tool_hyperplanningsync_import(\moodleform $mform, $formdata, \moodle_url $returnurl) {
-    global $DB, $USER;
+function tool_hyperplanningsync_import($content, $formdata, \moodle_url $returnurl) {
+    global $DB, $USER, $CFG;
+    require_once($CFG->libdir.'/csvlib.class.php');
 
     // Import id.
-    $importid = \csv_import_reader::get_new_iid('hyperplanningsync');
+    $importid = csv_import_reader::get_new_iid('hyperplanningsync');
 
     // CSV reader.
-    $csvreader = new \csv_import_reader($importid, 'hyperplanningsync');
-
-    // Filename.
-    $content = $mform->get_file_content('userfile');
+    $csvreader = new csv_import_reader($importid, 'hyperplanningsync');
 
     // Open the file.
     $readcount = $csvreader->load_csv_content($content, $formdata->upload_encoding, $formdata->upload_delimiter);
@@ -117,7 +115,7 @@ function tool_hyperplanningsync_import(\moodleform $mform, $formdata, \moodle_ur
     // Check the fields in the csv are valid.
     foreach ($columns as $column) {
         // Check field name is valid.
-        $checkfield = clean_param($column, PARAM_ALPHANUMEXT);
+        $checkfield = clean_param($column, PARAM_TEXT);
         if ($checkfield !== $column) {
             $csvreader->close();
             $csvreader->cleanup();
@@ -162,15 +160,24 @@ function tool_hyperplanningsync_import(\moodleform $mform, $formdata, \moodle_ur
     while ($row = $csvreader->next()) {
         $linenum++;
 
-        $newrow = array();
-        $newrow['importid'] = $importid;
-        $newrow['lineid'] = $linenum;
-        $newrow['processed'] = false;
-        $newrow['skipped'] = false;
-        $newrow['status'] = '';
-        $newrow['createdbyid'] = $USER->id;
-        $newrow['timecreated'] = time();
-        $newrow['idfield'] = $moodle_idfield;
+        // We init here safe values as insert_records does not like to have missing columns.
+        $newrow = array (
+            'importid' => $importid,
+            'lineid' => $linenum,
+            'processed' => false,
+            'skipped' => false,
+            'status' => '',
+            'createdbyid' => $USER->id,
+            'timecreated' => time(),
+            'idfield' => $moodle_idfield,
+            'userid' => '',
+            'email' => '',
+            'cohort' => '',
+            'maingroup' => '',
+            'othergroups' => '',
+            'cohortid' => '',
+            'groups' => '',
+        );
 
         foreach ($fields as $key => $csvfield) {
             if (!empty($importfields[$csvfield])) {
@@ -200,7 +207,9 @@ function tool_hyperplanningsync_import(\moodleform $mform, $formdata, \moodle_ur
             $newrow['cohortid'] = $cohortid;
         }
 
-        $groups = tool_hyperplanningsync_clean_groups($newrow);
+        $groups = tool_hyperplanningsync_clean_groups($newrow,
+            $formdata->group_transform_pattern,
+            $formdata->group_transform_replacement);
 
         // Use the group idnumber if available, otherwise use the group name.
         $sql = "SELECT g.id
@@ -265,9 +274,12 @@ function tool_hyperplanningsync_import(\moodleform $mform, $formdata, \moodle_ur
  * Combines the main group and other groups and strips them using the tab format.
  *
  * @param array $row
+ * @param string $pattern
+ * @param string $replacement
  * @return array of cleaned group.
+ * @throws coding_exception
  */
-function tool_hyperplanningsync_clean_groups($row) {
+function tool_hyperplanningsync_clean_groups($row, $pattern, $replacement) {
     $groups = array();
 
     if (!empty($row['maingroup'])) {
@@ -282,7 +294,12 @@ function tool_hyperplanningsync_clean_groups($row) {
     foreach ($groups as $key => $value) {
         $value = trim($value); // Trim spaces.
         $value = trim($value, '[]'); // Trim brackets.
-        $groups[$key] = clean_param($value, PARAM_TAG); // Trim any double spaces.
+        $cleangroup =  clean_param($value, PARAM_TAG); // Trim any double spaces.
+        if ($pattern) {
+            $cleangroup = preg_replace($pattern, $replacement, $cleangroup);
+        }
+        $groups[$key] =  $cleangroup;
+
     }
 
     return $groups;
