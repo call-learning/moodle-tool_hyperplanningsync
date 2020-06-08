@@ -91,6 +91,11 @@ $string['upload:encoding'] = 'Encoding';
 $string['upload:heading'] = 'Hyperplanning : Upload CSV file';
 $string['upload:heading:field'] = 'Field names';
 $string['upload:heading:file'] = 'File details';
+$string['upload:heading:settings'] = 'Additional settings';
+$string['upload:ignoregroups'] = 'Ignore missing groups?';
+$string['upload:ignoregroups_help'] = 'Unchecked : If any group is missing then the row will be skipped.
+
+Checked: Missing groups will be ignored and the row will still be processed.';
 $string['upload:idfield'] = 'ID field name';
 $string['upload:maingroup'] = 'Main group field name';
 $string['upload:moodle_idfield'] = 'Moodle ID field';

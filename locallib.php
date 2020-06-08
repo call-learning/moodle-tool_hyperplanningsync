@@ -227,7 +227,9 @@ function tool_hyperplanningsync_import($content, $formdata, \moodle_url $returnu
 
             if (!$DB->record_exists_sql($sql, array('groupidnumber' => $group))) {
                 $newrow['status'] .= get_string('error:nogroup', 'tool_hyperplanningsync', $group) . PHP_EOL;
-                $newrow['skipped'] = true;
+                if (empty($formdata->ignoregroups)) {
+                    $newrow['skipped'] = true;
+                }
                 continue;
             }
 
@@ -241,7 +243,9 @@ function tool_hyperplanningsync_import($content, $formdata, \moodle_url $returnu
                 // Check if there is a cohort + course + group combination.
                 if (!$DB->record_exists_sql($sql, $params)) {
                     $newrow['status'] .= get_string('error:nogroupincourse', 'tool_hyperplanningsync', $group) . PHP_EOL;
-                    $newrow['skipped'] = true;
+                    if (empty($formdata->ignoregroups)) {
+                        $newrow['skipped'] = true;
+                    }
                 }
             }
 
@@ -445,6 +449,7 @@ function tool_hyperplanningsync_process($formdata) {
 
         // This will look for courses associated with the cohort via cohort sync.
         // And any matching group idnumbers for those courses.
+        // Missing groups will be automagically ignored.
         $sql = "SELECT g.id AS groupid, g.name AS groupname, c.id AS courseid, c.fullname AS coursename
                 FROM {enrol} e
                 JOIN {course} c ON c.id = e.courseid

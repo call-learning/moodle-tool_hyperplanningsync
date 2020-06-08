@@ -63,6 +63,20 @@ class upload_form extends moodleform {
         $mform->setDefault('moodle_idfield', get_config('tool_hyperplanningsync', 'moodle_idfield'));
         $mform->addRule('moodle_idfield', get_string('required'), 'required', null, 'client');
 
+        $fields = tool_hyperplanningsync_get_fields();
+
+        foreach ($fields as $fieldname => $ignore) {
+            $mform->addElement('text', 'field_' . $fieldname, get_string('upload:' . $fieldname, 'tool_hyperplanningsync'));
+            $mform->setType('field_' . $fieldname, PARAM_TEXT);
+            $mform->addRule('field_' . $fieldname, get_string('required'), 'required', null, 'client');
+        }
+
+        $mform->addElement('header', 'field_heading', get_string('upload:heading:settings', 'tool_hyperplanningsync'));
+
+        $mform->addElement('advcheckbox', 'ignoregroups', get_string('upload:ignoregroups', 'tool_hyperplanningsync'));
+        $mform->setType('ignoregroups', PARAM_BOOL);
+        $mform->addHelpButton('ignoregroups', 'upload:ignoregroups', 'tool_hyperplanningsync');
+
         $mform->addElement('text', 'group_transform_pattern',
             get_string('upload:group_transform_pattern', 'tool_hyperplanningsync'));
         $mform->setType('group_transform_pattern', PARAM_TEXT);
@@ -71,15 +85,7 @@ class upload_form extends moodleform {
         $mform->addElement('text', 'group_transform_replacement',
             get_string('upload:group_transform_replacement', 'tool_hyperplanningsync'));
         $mform->setType('group_transform_replacement', PARAM_TEXT);
-        $mform->setDefault('group_transform_replacement', get_config('tool_hyperplanningsync', group_transform_replacement));
-
-        $fields = tool_hyperplanningsync_get_fields();
-
-        foreach ($fields as $fieldname => $ignore) {
-            $mform->addElement('text', 'field_' . $fieldname, get_string('upload:' . $fieldname, 'tool_hyperplanningsync'));
-            $mform->setType('field_' . $fieldname, PARAM_TEXT);
-            $mform->addRule('field_' . $fieldname, get_string('required'), 'required', null, 'client');
-        }
+        $mform->setDefault('group_transform_replacement', get_config('tool_hyperplanningsync', 'group_transform_replacement'));
 
         $this->add_action_buttons(false, get_string('upload:btn', 'tool_hyperplanningsync'));
     }
