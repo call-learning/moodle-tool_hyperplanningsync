@@ -70,10 +70,11 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         );
         $this->loadDataSet($dataset);
 
-        for ($j = 0; $j < self::MAX_USERS; $j++) {
+        for ($j = 1; $j <= self::MAX_USERS; $j++) {
             $user = $this->getDataGenerator()->create_user([
                 'firstname' => 'etudiant' . $j,
                 'surname' => 'etudiant' . $j,
+                'username' => 'etudiant' . $j,
                 'email' => "etudiant{$j}.etudiant{$j}@email.com"
             ]);
             $this->users[$j] = $user;
@@ -88,7 +89,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         $formdata->moodle_idfield = get_config('tool_hyperplanningsync', 'moodle_idfield');
         $formdata->group_transform_pattern = self::GROUP_PATTERN_SAMPLE;
         $formdata->group_transform_replacement = self::GROUP_REPLACE_SAMPLE;
-
+        $formdata->ignoregroups = true;
         $fields = tool_hyperplanningsync_get_fields();
 
         foreach ($fields as $fieldname => $value) {
@@ -198,8 +199,8 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         $A2cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A2'));
         $A4cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A4'));
 
-        $student1 = $this->users[2];
-        $student26 = $this->users[27];
+        $student1 = $this->users[1];
+        $student26 = $this->users[26];
 
         // Do the precheck import
         $importid = $this->import_precheck('sample_export_hyperplanning_simple.csv');
@@ -214,10 +215,10 @@ class tool_hyperplanningsync_test extends advanced_testcase {
 
         $student1cohort = $DB->get_record_sql(self::SQL_GET_COHORT, array('userid' => $student1->id));
         $student26cohort = $DB->get_record_sql(self::SQL_GET_COHORT, array('userid' => $student26->id));
-        $this->assertCount(1, $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student1->id)));
-        $this->assertCount(1, $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student26->id)));
         $this->assertEquals($A1cohortid, $student1cohort->id);
         $this->assertEquals($A2cohortid, $student26cohort->id);
+        $this->assertCount(1, $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student1->id)));
+        $this->assertCount(1, $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student26->id)));
     }
 
     /**
@@ -231,8 +232,8 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         $A2cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A2'));
         $A4cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A4'));
 
-        $student1 = $this->users[2];
-        $student26 = $this->users[27];
+        $student1 = $this->users[1];
+        $student26 = $this->users[26];
         cohort_add_member($A4cohortid, $student1->id); // Set User 1 to belong to cohort A4.
 
         // Do the precheck import
@@ -250,7 +251,9 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         $student26cohort = $DB->get_record_sql(self::SQL_GET_COHORT, array('userid' => $student26->id));
         $this->assertCount(2, $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student1->id)));
         $this->assertCount(1, $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student26->id)));
-        $this->assertEquals($A1cohortid, array_pop($student1cohort)->id);
+        $this->assertContains($A1cohortid, array_map(function($cohort) {
+            return $cohort->id;
+        }, $student1cohort));
         $this->assertEquals($A2cohortid, $student26cohort->id);
     }
 

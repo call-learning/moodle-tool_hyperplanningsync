@@ -462,7 +462,7 @@ function tool_hyperplanningsync_process($formdata) {
         $newgroups = $DB->get_records_sql($sql, $params);
 
         // Remove from existing groups.
-        if ($removegroups) {
+        if ($removegroups && $newgroups) {
             // Ignore new groups.
             $newgroupids = array_keys($newgroups);
             list($groupswhere, $params) = $DB->get_in_or_equal($newgroupids, SQL_PARAMS_NAMED, 'groupid', false);
