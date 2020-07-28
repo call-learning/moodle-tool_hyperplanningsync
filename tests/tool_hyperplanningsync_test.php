@@ -25,8 +25,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-use tool_filetypes\utils;
-
 global $CFG;
 require_once($CFG->dirroot . '/admin/tool/hyperplanningsync/locallib.php');
 
@@ -60,7 +58,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         parent::setUp();
         global $DB;
         $this->resetAfterTest();
-        // Setup custom profile fields
+        // Setup custom profile fields.
         $dataset = $this->createCsvDataSet(array(
                 'cohort' => __DIR__ . '/fixtures/cohort.csv',
                 'course' => __DIR__ . '/fixtures/course.csv',
@@ -119,7 +117,8 @@ class tool_hyperplanningsync_test extends advanced_testcase {
             'email' => 'etudiant1.etudiant1@email.com',
             'cohort' => 'A1',
             'maingroup' => '< A1 > gr8.1',
-            'othergroups' => '[ A1 gr4.1] ,  [ A1 sans gr8.2] ,  [ A1 sans gr8.3] ,  [ A1 sans gr8.4] ,  [ A1 sans gr8.5] ,  [ A1 sans gr8.6] ,  [ A1 sans gr8.7] ,  [ A1 sans gr8.8]',
+            'othergroups' => '[ A1 gr4.1] ,  [ A1 sans gr8.2] ,  [ A1 sans gr8.3] ,  [ A1 sans gr8.4] ,  [ A1 sans gr8.5] ,'
+                .'  [ A1 sans gr8.6] ,  [ A1 sans gr8.7] ,  [ A1 sans gr8.8]',
             'cohortid' => '1',
         );
         $simpletransform = tool_hyperplanningsync_clean_groups($row, '', '');
@@ -195,14 +194,14 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         // Prepare.
-        $A1cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A1'));
-        $A2cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A2'));
-        $A4cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A4'));
+        $a1cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A1'));
+        $a2cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A2'));
+        $a4cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A4'));
 
         $student1 = $this->users[1];
         $student26 = $this->users[26];
 
-        // Do the precheck import
+        // Do the precheck import.
         $importid = $this->import_precheck('sample_export_hyperplanning_simple.csv');
 
         // Now do the processing.
@@ -215,8 +214,8 @@ class tool_hyperplanningsync_test extends advanced_testcase {
 
         $student1cohort = $DB->get_record_sql(self::SQL_GET_COHORT, array('userid' => $student1->id));
         $student26cohort = $DB->get_record_sql(self::SQL_GET_COHORT, array('userid' => $student26->id));
-        $this->assertEquals($A1cohortid, $student1cohort->id);
-        $this->assertEquals($A2cohortid, $student26cohort->id);
+        $this->assertEquals($a1cohortid, $student1cohort->id);
+        $this->assertEquals($a2cohortid, $student26cohort->id);
         $this->assertCount(1, $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student1->id)));
         $this->assertCount(1, $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student26->id)));
     }
@@ -228,15 +227,15 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         // Prepare.
-        $A1cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A1'));
-        $A2cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A2'));
-        $A4cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A4'));
+        $a1cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A1'));
+        $a2cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A2'));
+        $a4cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A4'));
 
         $student1 = $this->users[1];
         $student26 = $this->users[26];
-        cohort_add_member($A4cohortid, $student1->id); // Set User 1 to belong to cohort A4.
+        cohort_add_member($a4cohortid, $student1->id); // Set User 1 to belong to cohort A4.
 
-        // Do the precheck import
+        // Do the precheck import.
         $importid = $this->import_precheck('sample_export_hyperplanning_simple.csv');
 
         // Now do the processing but specify we don't remove student from cohort or group.
@@ -251,10 +250,10 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         $student26cohort = $DB->get_record_sql(self::SQL_GET_COHORT, array('userid' => $student26->id));
         $this->assertCount(2, $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student1->id)));
         $this->assertCount(1, $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student26->id)));
-        $this->assertContains($A1cohortid, array_map(function($cohort) {
+        $this->assertContains($a1cohortid, array_map(function($cohort) {
             return $cohort->id;
         }, $student1cohort));
-        $this->assertEquals($A2cohortid, $student26cohort->id);
+        $this->assertEquals($a2cohortid, $student26cohort->id);
     }
 
 }

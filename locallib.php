@@ -60,20 +60,19 @@ function tool_hyperplanningsync_get_fields($formdata = null) {
     return $fields;
 }
 
-
 /**
  * Import the CSV file into the log table.
  *
- * @global moodle_database $DB
- * @global stdClass $USER
  * @param string $content CSV file content
  * @param stdClass $formdata
  * @param \moodle_url $returnurl
  * @return int importid
+ * @global moodle_database $DB
+ * @global stdClass $USER
  */
 function tool_hyperplanningsync_import($content, $formdata, \moodle_url $returnurl) {
     global $DB, $USER, $CFG;
-    require_once($CFG->libdir.'/csvlib.class.php');
+    require_once($CFG->libdir . '/csvlib.class.php');
 
     // Import id.
     $importid = csv_import_reader::get_new_iid('hyperplanningsync');
@@ -106,8 +105,8 @@ function tool_hyperplanningsync_import($content, $formdata, \moodle_url $returnu
     $importfields = array_map('strtolower', $importfields);
 
     // Swap to the moodle id field.
-    $moodle_idfield = get_config('tool_hyperplanningsync', 'moodle_idfield');
-    $importfields[$moodle_idfield] = $importfields['idfield'];
+    $moodleidfield = get_config('tool_hyperplanningsync', 'moodle_idfield');
+    $importfields[$moodleidfield] = $importfields['idfield'];
     unset($importfields['idfield']);
 
     $fields = array();
@@ -161,7 +160,7 @@ function tool_hyperplanningsync_import($content, $formdata, \moodle_url $returnu
         $linenum++;
 
         // We init here safe values as insert_records does not like to have missing columns.
-        $newrow = array (
+        $newrow = array(
             'importid' => $importid,
             'lineid' => $linenum,
             'processed' => false,
@@ -169,7 +168,7 @@ function tool_hyperplanningsync_import($content, $formdata, \moodle_url $returnu
             'status' => '',
             'createdbyid' => $USER->id,
             'timecreated' => time(),
-            'idfield' => $moodle_idfield,
+            'idfield' => $moodleidfield,
             'userid' => '',
             'email' => '',
             'cohort' => '',
@@ -188,7 +187,7 @@ function tool_hyperplanningsync_import($content, $formdata, \moodle_url $returnu
             }
         }
 
-        if (!$userid = $DB->get_field('user', 'id', array($moodle_idfield => $newrow[$moodle_idfield]))) {
+        if (!$userid = $DB->get_field('user', 'id', array($moodleidfield => $newrow[$moodleidfield]))) {
             $newrow['status'] .= get_string('error:nouser', 'tool_hyperplanningsync') . PHP_EOL;
             $newrow['skipped'] = true;
         } else {
@@ -298,11 +297,11 @@ function tool_hyperplanningsync_clean_groups($row, $pattern, $replacement) {
     foreach ($groups as $key => $value) {
         $value = trim($value); // Trim spaces.
         $value = trim($value, '[]'); // Trim brackets.
-        $cleangroup =  clean_param($value, PARAM_TAG); // Trim any double spaces.
+        $cleangroup = clean_param($value, PARAM_TAG); // Trim any double spaces.
         if ($pattern) {
             $cleangroup = preg_replace($pattern, $replacement, $cleangroup);
         }
-        $groups[$key] =  $cleangroup;
+        $groups[$key] = $cleangroup;
 
     }
 
@@ -312,9 +311,9 @@ function tool_hyperplanningsync_clean_groups($row, $pattern, $replacement) {
 /**
  * Returns a list of records in the log
  *
- * @global moodle_database $DB
  * @param array $filters
  * @return array of record objects
+ * @global moodle_database $DB
  */
 function tool_hyperplanningsync_get_log($filters) {
     global $DB;
@@ -378,14 +377,17 @@ function tool_hyperplanningsync_get_log($filters) {
 /**
  * Process the data.
  *
- * @global moodle_database $DB
  * @param stdClass $formdata
+ * @global moodle_database $DB
  */
 function tool_hyperplanningsync_process($formdata) {
     global $DB;
+    // Raise time limit so we can process the full set.
+    // TODO: Use a adhoc task.
+    core_php_time_limit::raise(600);
 
-    $removecohorts = (int)$formdata->removecohorts;
-    $removegroups = (int)$formdata->removegroups;
+    $removecohorts = (int) $formdata->removecohorts;
+    $removegroups = (int) $formdata->removegroups;
 
     $params = array(
         'importid' => $formdata->importid,
@@ -423,7 +425,7 @@ function tool_hyperplanningsync_process($formdata) {
 
             if ($cohorts = $DB->get_records_sql($sql, $params)) {
                 foreach ($cohorts as $cohort) {
-                    cohort_remove_member($cohort->id, $row->userid);
+                    quick_cohort_remove_member($cohort->id, $row->userid);
                     // Update status.
                     $newstatus = get_string('process:removedcohort', 'tool_hyperplanningsync', $cohort);
                     tool_hyperplanningsync_update_status($row->id, $newstatus);
@@ -432,7 +434,7 @@ function tool_hyperplanningsync_process($formdata) {
         }
 
         // Add to cohort - This will trigger an event to enrol the user too.
-        cohort_add_member($row->cohortid, $row->userid);
+        quick_cohort_add_member($row->cohortid, $row->userid);
 
         // Update status.
         $newcohort = $DB->get_record('cohort', array('id' => $row->cohortid), 'id, name, idnumber');
@@ -518,11 +520,46 @@ function tool_hyperplanningsync_process($formdata) {
 }
 
 /**
+ * This will do the same as cohort_add_member but won't trigger the signal.
+ * As the cohort will then be processed later (as per the course sync)
+ *
+ * @param $cohortid
+ * @param $userid
+ * @throws dml_exception
+ */
+function quick_cohort_add_member($cohortid, $userid) {
+    global $DB;
+    if ($DB->record_exists('cohort_members', array('cohortid' => $cohortid, 'userid' => $userid))) {
+        // No duplicates!
+        return;
+    }
+    $record = new stdClass();
+    $record->cohortid = $cohortid;
+    $record->userid = $userid;
+    $record->timeadded = time();
+    $DB->insert_record('cohort_members', $record);
+}
+
+/**
+ * This will do the same as cohort_add_member but won't trigger the signal.
+ * As the cohort will then be processed later (as per the course sync)
+ *
+ * @param $cohortid
+ * @param $userid
+ * @throws dml_exception
+ */
+function quick_cohort_remove_member($cohortid, $userid) {
+    global $DB;
+    $DB->delete_records('cohort_members', array('cohortid' => $cohortid, 'userid' => $userid));
+    $DB->get_record('cohort', array('id' => $cohortid), '*', MUST_EXIST);
+}
+
+/**
  * Update the status.
  *
- * @global moodle_database $DB
  * @param int $logid
  * @param string $newstatus
+ * @global moodle_database $DB
  */
 function tool_hyperplanningsync_update_status($logid, $newstatus) {
     global $DB;

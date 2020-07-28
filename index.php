@@ -44,7 +44,7 @@ if ($formdata = $mform->get_data()) {
 
     // Filename.
     $content = $mform->get_file_content('userfile');
-    
+
     // Validate and import.
     if ($importid = tool_hyperplanningsync_import($content, $formdata, $returnurl)) {
 
