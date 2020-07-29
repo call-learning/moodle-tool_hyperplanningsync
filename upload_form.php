@@ -27,8 +27,21 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 
+/**
+ * Class upload_form
+ * @package    tool_hyperplanningsync
+ * @copyright  2020 CALL Learning
+ * @author     Russell England <Russell.England@gmail.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class upload_form extends moodleform {
 
+    /**
+     * Form definition
+     *
+     * @throws coding_exception
+     * @throws dml_exception
+     */
     public function definition() {
         $mform = $this->_form;
 
@@ -74,6 +87,7 @@ class upload_form extends moodleform {
         $mform->addElement('header', 'field_heading', get_string('upload:heading:settings', 'tool_hyperplanningsync'));
 
         $mform->addElement('advcheckbox', 'ignoregroups', get_string('upload:ignoregroups', 'tool_hyperplanningsync'));
+        $mform->setDefault('ignoregroups', true);
         $mform->setType('ignoregroups', PARAM_BOOL);
         $mform->addHelpButton('ignoregroups', 'upload:ignoregroups', 'tool_hyperplanningsync');
 

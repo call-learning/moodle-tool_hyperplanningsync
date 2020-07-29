@@ -34,6 +34,7 @@ $pageoptions = array('pagelayout' => 'report');
 $pageparams = array();
 
 admin_externalpage_setup('tool_hyperplanningsync_import', '', $pageparams, '', $pageoptions);
+require_capability('tool/hyperplanningsync:manage', context_system::instance());
 
 $fields = tool_hyperplanningsync_get_fields();
 

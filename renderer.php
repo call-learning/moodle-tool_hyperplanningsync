@@ -32,6 +32,9 @@ require_once(dirname(__FILE__) . '/locallib.php');
 /**
  * hyperplanningsync renderer
  *
+ * @copyright  2020 CALL Learning
+ * @author     Russell England <Russell.England@gmail.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_hyperplanningsync_renderer extends plugin_renderer_base {
 
@@ -40,7 +43,11 @@ class tool_hyperplanningsync_renderer extends plugin_renderer_base {
      *
      * @param array $rows array of record objects
      * @param array $pageparams url parameters and filters
+     * @param int $totalcount
+     * @param moodle_url $url
      * @return string - html to output
+     * @throws coding_exception
+     * @throws moodle_exception
      */
     public function display_log($rows, $pageparams, $totalcount, $url) {
 

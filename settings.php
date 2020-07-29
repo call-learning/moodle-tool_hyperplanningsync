@@ -73,14 +73,14 @@ if ($hassiteconfig) {
         'tool_hyperplanningsync/group_transform_pattern', // Group name transformation as a regexp
         get_string('settings:group_transform_pattern', 'tool_hyperplanningsync'), // Label.
         get_string('settings:group_transform_pattern', 'tool_hyperplanningsync'), // Help.
-        '' // Default no pattern.
+        '/(A[0-9]+)\s*gr([0-9]\.[0-9])/i'
     ));
 
     $hyperplanningsyncsettings->add(new admin_setting_configtext(
         'tool_hyperplanningsync/group_transform_replacement', // Group name replacement (as a regexp).
         get_string('settings:group_transform_replacement', 'tool_hyperplanningsync'), // Label.
         get_string('settings:group_transform_replacement', 'tool_hyperplanningsync'), // Help.
-        '' // Default : no replacement.
+        '\1\3Gr\2'
     ));
 
     $fields = tool_hyperplanningsync_get_fields();

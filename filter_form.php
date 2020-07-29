@@ -27,7 +27,20 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/formslib.php');
 
+/**
+ * Class filter_form
+ *
+ * @package    tool_hyperplanningsync
+ * @copyright  2020 CALL Learning
+ * @author     Russell England <Russell.England@gmail.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class filter_form extends moodleform {
+    /**
+     * Form definition
+     *
+     * @throws coding_exception
+     */
     public function definition () {
         $mform = $this->_form;
 

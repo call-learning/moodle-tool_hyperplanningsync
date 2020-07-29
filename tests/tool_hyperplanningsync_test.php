@@ -41,22 +41,34 @@ class tool_hyperplanningsync_test extends advanced_testcase {
      */
     const MAX_USERS = 148;
 
+    /**
+     * Pattern
+     */
     const GROUP_PATTERN_SAMPLE = '/(A[0-9]+)\s*gr([0-9]\.[0-9])/i';
+    /**
+     * Replacement
+     */
     const GROUP_REPLACE_SAMPLE = '\1\3Gp\2';
+    /**
+     * SQL to get cohorts
+     */
     const SQL_GET_COHORT = 'SELECT c.*
               FROM {cohort} c
               JOIN {cohort_members} cm ON c.id = cm.cohortid
              WHERE cm.userid = :userid AND c.visible = 1';
 
+    /**
+     * Sampple user list
+     * @var array
+     */
     protected $users = [];
 
     /**
-     *
+     * Setup
      * @throws dml_exception
      */
     public function setUp() {
         parent::setUp();
-        global $DB;
         $this->resetAfterTest();
         // Setup custom profile fields.
         $dataset = $this->createCsvDataSet(array(
@@ -80,6 +92,12 @@ class tool_hyperplanningsync_test extends advanced_testcase {
 
     }
 
+    /**
+     * Get default for upload form data
+     *
+     * @return stdClass
+     * @throws dml_exception
+     */
     protected function get_default_upload_formdata() {
         $formdata = new \stdClass();
         $formdata->upload_delimiter = 'comma';
@@ -101,7 +119,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
      * Tests is_extension_invalid() function.
      */
     public function test_group_transform() {
-        global $CFG, $DB;
+        global $CFG;
         $this->resetAfterTest();
         require_once($CFG->dirroot . '/admin/tool/hyperplanningsync/locallib.php');
         $row = array(
@@ -147,6 +165,15 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         ), $patterntransforms);
     }
 
+    /**
+     * Import precheck fixture
+     *
+     * @param string $fixturefile
+     * @return int
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws moodle_exception
+     */
     protected function import_precheck($fixturefile) {
         // Prepare.
         $filename = dirname(__FILE__) . '/fixtures/' . $fixturefile;

@@ -22,7 +22,7 @@
  * @author     Russell England <Russell.England@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+define('NO_OUTPUT_BUFFERING', true);
 require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once(dirname(__FILE__) . '/locallib.php');
@@ -38,22 +38,30 @@ $pageoptions = array('pagelayout' => 'report');
 $thisurl = new moodle_url('/admin/tool/hyperplanningsync/preview.php');
 
 admin_externalpage_setup('tool_hyperplanningsync_import', '', $pageparams, $thisurl, $pageoptions);
+require_capability('tool/hyperplanningsync:manage', context_system::instance());
 
 $mform = new preview_form();
-if ($formdata = $mform->get_data()) {
+$formdata = $mform->get_data();
 
+if ($formdata = $mform->get_data()) {
+    $PAGE->set_cacheable(false);    // Progress bar is used here.
+    echo $OUTPUT->header();
+    echo $OUTPUT->heading(get_string('preview:heading:process', 'tool_hyperplanningsync'));
     // Just in case.
     require_sesskey();
+    $progressbar = new progress_bar();
+    $progressbar->create();
 
     // Lets do this.
-    tool_hyperplanningsync_process($formdata);
+    tool_hyperplanningsync_process($formdata, $progressbar);
 
     $viewlogurl = new moodle_url('/admin/tool/hyperplanningsync/viewlog.php', $pageparams);
-    redirect($viewlogurl);
+    echo $OUTPUT->continue_button($viewlogurl, get_string('continue'), 'get');
+    echo $output->footer();
+    exit;
 }
 
 echo $OUTPUT->header();
-
 echo $OUTPUT->heading(get_string('preview:heading', 'tool_hyperplanningsync'));
 
 $mform->set_data($pageparams);
@@ -66,5 +74,4 @@ echo $OUTPUT->heading(get_string('preview:results', 'tool_hyperplanningsync', $t
 $renderer = $PAGE->get_renderer('tool_hyperplanningsync');
 
 echo $renderer->display_log($rows, $pageparams, $totalcount, $thisurl);
-
 echo $OUTPUT->footer();
