@@ -25,6 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['cli:listofimports'] = 'List of imports';
 $string['error:invalidfieldname'] = 'Invalid field name in CSV : {$a}';
 $string['error:missingfield'] = 'Missing field in CSV : {$a}';
 $string['error:nocohort'] = 'Cohort not found';

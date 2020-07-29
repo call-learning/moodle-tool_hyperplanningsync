@@ -409,14 +409,19 @@ function tool_hyperplanningsync_process($formdata, $progressbar = null) {
         return;
     }
     $rowcount = $DB->count_records('tool_hyperplanningsync_log', $params);
-    $rowindex  = 0;
+    $rowindex = 0;
 
     foreach ($rows as $row) {
         // Update status.
         $newstatus = get_string('process:started', 'tool_hyperplanningsync');
         tool_hyperplanningsync_update_status($row->id, $newstatus);
         if ($progressbar) {
-            $progressbar->update($rowindex, $rowcount, get_string('process:progress', 'tool_hyperplanningsync'));
+            if ($progressbar instanceof progress_bar) {
+                $progressbar->update($rowindex, $rowcount, get_string('process:progress', 'tool_hyperplanningsync'));
+            }
+            if ($progressbar instanceof text_progress_trace) {
+                $progressbar->output("$rowindex/$rowcount");
+            }
         }
 
         // Remove existing cohorts.
@@ -434,7 +439,7 @@ function tool_hyperplanningsync_process($formdata, $progressbar = null) {
 
             if ($cohorts = $DB->get_records_sql($sql, $params)) {
                 foreach ($cohorts as $cohort) {
-                    cohort_remove_member($cohort->id, $row->userid);
+                    quick_cohort_remove_member($cohort->id, $row->userid);
                     // Update status.
                     $newstatus = get_string('process:removedcohort', 'tool_hyperplanningsync', $cohort);
                     tool_hyperplanningsync_update_status($row->id, $newstatus);
@@ -529,6 +534,19 @@ function tool_hyperplanningsync_process($formdata, $progressbar = null) {
 }
 
 /**
+ * Remove cohort member without triggering an event.
+ *
+ * @param int $cohortid
+ * @param int $userid
+ * @return void
+ * @throws dml_exception
+ */
+function quick_cohort_remove_member($cohortid, $userid) {
+    global $DB;
+    $DB->delete_records('cohort_members', array('cohortid' => $cohortid, 'userid' => $userid));
+}
+
+/**
  * Update the status.
  *
  * @param int $logid
@@ -555,3 +573,17 @@ function tool_hyperplanningsync_update_status($logid, $newstatus) {
     $DB->set_field('tool_hyperplanningsync_log', 'status', $status, array('id' => $logid));
 }
 
+/**
+ * Get a list of importid that have not been processed
+ *
+ * @return array
+ * @throws dml_exception
+ */
+function tool_hyperplanningsync_get_unprocessed_importids() {
+    global $DB;
+
+    // Get unprocessed import ids.
+    return $DB->get_records_sql('SELECT importid, timecreated 
+                FROM {tool_hyperplanningsync_log} WHERE processed = 0 GROUP BY importid');
+
+}
