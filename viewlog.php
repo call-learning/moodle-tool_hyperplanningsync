@@ -35,6 +35,9 @@ $pageparams['idvalue'] = optional_param('idvalue', '', PARAM_TEXT);
 $pageparams['cohort'] = optional_param('cohort', '', PARAM_TEXT);
 $pageparams['pagenum'] = optional_param('pagenum', 0, PARAM_INT);
 
+$delete = optional_param('delete', '', PARAM_ALPHA);
+$confirm = optional_param('confirm', false, PARAM_BOOL);
+
 $pageoptions = array('pagelayout' => 'report');
 
 $thisurl = new moodle_url('/admin/tool/hyperplanningsync/viewlog.php');
@@ -44,6 +47,42 @@ admin_externalpage_setup('tool_hyperplanningsync_import', '', $pageparams, $this
 echo $OUTPUT->header();
 
 echo $OUTPUT->heading(get_string('viewlog:heading', 'tool_hyperplanningsync'));
+
+if (!empty($delete)) {
+    if (!$confirm) {
+        $confirmmsg = get_string('viewlog:deleteconfirm' . $delete,'tool_hyperplanningsync');
+        $continueurl = new moodle_url('/admin/tool/hyperplanningsync/viewlog.php',
+            array('confirm' => true, 'delete' => $delete, 'sesskey' => sesskey()));
+        $cancelurl = new moodle_url('/admin/tool/hyperplanningsync/viewlog.php');
+
+        echo $OUTPUT->confirm($confirmmsg, $continueurl, $cancelurl);
+        echo $OUTPUT->footer();
+        die();
+
+    } else {
+        require_sesskey();
+
+        switch ($delete) {
+            case 'all':
+                $DB->delete_records('tool_hyperplanningsync_log');
+
+                echo $OUTPUT->notification(get_string('viewlog:deletedall', 'tool_hyperplanningsync'), 'notifysuccess');
+                break;
+
+            case 'partial':
+                $sql = "SELECT MAX(a.importid)
+                        FROM {tool_hyperplanningsync_log} a";
+                $importid = $DB->get_field_sql($sql);
+
+                $DB->delete_records_select('tool_hyperplanningsync_log', 'importid <> :importid', array('importid' => $importid));
+
+                echo $OUTPUT->notification(get_string('viewlog:deletedpartial', 'tool_hyperplanningsync'), 'notifysuccess');
+                break;
+
+        }
+
+    }
+}
 
 $mform = new filter_form();
 $mform->set_data($pageparams);
@@ -56,5 +95,15 @@ echo $OUTPUT->heading(get_string('viewlog:results', 'tool_hyperplanningsync', $t
 $renderer = $PAGE->get_renderer('tool_hyperplanningsync');
 
 echo $renderer->display_log($rows, $pageparams, $totalcount, $thisurl);
+
+$url = new moodle_url('/admin/tool/hyperplanningsync/viewlog.php',
+        array('delete' => 'all', 'sesskey' => sesskey()));
+$buttons = $OUTPUT->single_button($url, get_string('viewlog:deleteall', 'tool_hyperplanningsync'), 'get');
+
+$url = new moodle_url('/admin/tool/hyperplanningsync/viewlog.php',
+        array('delete' => 'partial', 'sesskey' => sesskey()));
+$buttons .= $OUTPUT->single_button($url, get_string('viewlog:deletepartial', 'tool_hyperplanningsync'), 'get');
+
+echo $OUTPUT->box($buttons);
 
 echo $OUTPUT->footer();

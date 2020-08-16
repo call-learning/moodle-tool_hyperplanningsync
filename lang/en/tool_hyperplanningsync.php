@@ -56,17 +56,19 @@ $string['process:removedcohort'] = 'Removed user from cohort "{$a->name}" ({$a->
 $string['process:removedgroup'] = 'Removed user from group "{$a->groupname}" ({$a->groupid}) in course "{$a->coursename}" ({$a->courseid})';
 $string['process:removegroups'] = 'Remove from existing groups?';
 $string['process:started'] = 'Processing start';
+$string['process:usercreated'] = 'Pending user created';
 $string['process:progress'] = 'Processing import';
 $string['report:cohort'] = 'Cohort ID Number';
 $string['report:cohortid'] = 'Matching Cohort Name';
 $string['report:createdbyid'] = 'Imported by';
-$string['report:groups'] = 'Cleaned Group ID numbers';
+$string['report:groupscsv'] = 'Cleaned Group ID numbers';
 $string['report:idfield'] = 'ID field';
 $string['report:idvalue'] = 'ID value';
 $string['report:importid'] = 'Import ID';
 $string['report:lineid'] = 'Line number';
 $string['report:maingroup'] = 'Main Group';
 $string['report:othergroups'] = 'Other Groups';
+$string['report:pending'] = 'Pending User?';
 $string['report:skipped'] = 'Skipped?';
 $string['report:status'] = 'Status';
 $string['report:timecreated'] = 'Time imported';
@@ -105,9 +107,14 @@ $string['upload:moodle_idfield'] = 'Moodle ID field';
 $string['upload:othergroups'] = 'Other groups field name';
 $string['upload:group_transform_pattern'] = 'Regexp for group name (pattern)';
 $string['upload:group_transform_replacement'] = 'Regexp replacement for group name';
+$string['viewlog:deleteall'] = 'Clear all import logs';
+$string['viewlog:deletepartial'] = 'Clear all except latest import log';
+$string['viewlog:deleteconfirmall'] = 'Are you sure you want to clear all import logs?';
+$string['viewlog:deleteconfirmpartial'] = 'Are you sure you want to clear all except latest import log?';
+$string['viewlog:deletedall'] = 'Cleared all import logs';
+$string['viewlog:deletedpartial'] = 'Cleared all except latest import log';
 $string['viewlog:heading'] = 'Import log';
 $string['viewlog:results'] = 'Search results ({$a})';
-
 
 $string['upload:info'] = 'Users may be uploaded via text file. The format of the file should be as follows:
 

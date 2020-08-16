@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version info
+ * Observers
  *
  * @package    tool_hyperplanningsync
  * @copyright  2020 CALL Learning
@@ -25,6 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2020052506; // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2018120310; // Requires this Moodle version.
-$plugin->component = 'tool_hyperplanningsync'; // Full name of the plugin (used for diagnostics).
+$observers = array(
+    array(
+        'eventname'   => '\core\event\user_created',
+        'callback'    => 'tool_hyperplanningsync_observer::user_created',
+    ),
+);

@@ -64,6 +64,9 @@ function tool_hyperplanningsync_get_fields($formdata = null) {
 /**
  * Import the CSV file into the log table.
  *
+ * @global moodle_database $DB
+ * @global stdClass $USER
+ * @global stdClass $CFG
  * @param string $content CSV file content
  * @param stdClass $formdata
  * @param \moodle_url $returnurl
@@ -167,6 +170,7 @@ function tool_hyperplanningsync_import($content, $formdata, \moodle_url $returnu
             'lineid' => $linenum,
             'processed' => false,
             'skipped' => false,
+            'pending' => false,
             'status' => '',
             'createdbyid' => $USER->id,
             'timecreated' => time(),
@@ -177,7 +181,7 @@ function tool_hyperplanningsync_import($content, $formdata, \moodle_url $returnu
             'maingroup' => '',
             'othergroups' => '',
             'cohortid' => '',
-            'groups' => '',
+            'groupscsv' => '',
         );
 
         foreach ($fields as $key => $csvfield) {
@@ -191,7 +195,9 @@ function tool_hyperplanningsync_import($content, $formdata, \moodle_url $returnu
 
         if (!$userid = $DB->get_field('user', 'id', array($moodleidfield => $newrow[$moodleidfield]))) {
             $newrow['status'] .= get_string('error:nouser', 'tool_hyperplanningsync') . PHP_EOL;
-            $newrow['skipped'] = true;
+            // Missing users are pending not skipped.
+            // So if skipped = true, then this row has been skipped for another reason.
+            $newrow['pending'] = true;
         } else {
             $newrow['userid'] = $userid;
         }
@@ -252,7 +258,7 @@ function tool_hyperplanningsync_import($content, $formdata, \moodle_url $returnu
 
         }
 
-        $newrow['groups'] = implode(',', $groups);
+        $newrow['groupscsv'] = implode(',', $groups);
 
         $newrows[] = $newrow;
 
@@ -384,7 +390,7 @@ function tool_hyperplanningsync_get_log($filters) {
  * @throws coding_exception
  * @throws dml_exception
  */
-function tool_hyperplanningsync_process($formdata, $progressbar = null) {
+function tool_hyperplanningsync_process($formdata, $progressbar = null, $logid = null) {
     global $DB;
     // Raise time limit so we can process the full set.
     // TODO: Use a adhoc task.
@@ -397,8 +403,14 @@ function tool_hyperplanningsync_process($formdata, $progressbar = null) {
     $params = array(
         'importid' => $formdata->importid,
         'skipped' => false,
+        'pending' => false,
         'processed' => false,
     );
+
+    if (!empty($logid)) {
+        // Process one record only - used by the observer.
+        $params['id'] = $logid;
+    }
 
     // Get rows for this importid that haven't got errors and haven't been processed.
     $rows = $DB->get_recordset('tool_hyperplanningsync_log', $params);
@@ -456,7 +468,7 @@ function tool_hyperplanningsync_process($formdata, $progressbar = null) {
         tool_hyperplanningsync_update_status($row->id, $newstatus);
 
         // Get the groupid numbers we want to sign up to.
-        $groupidnumbers = explode(',', $row->groups);
+        $groupidnumbers = explode(',', $row->groupscsv);
 
         list($groupswhere, $params) = $DB->get_in_or_equal($groupidnumbers, SQL_PARAMS_NAMED, 'groupidnumber');
 

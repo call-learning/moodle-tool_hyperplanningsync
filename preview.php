@@ -57,7 +57,7 @@ if ($formdata = $mform->get_data()) {
 
     $viewlogurl = new moodle_url('/admin/tool/hyperplanningsync/viewlog.php', $pageparams);
     echo $OUTPUT->continue_button($viewlogurl, get_string('continue'), 'get');
-    echo $output->footer();
+    echo $OUTPUT->footer();
     exit;
 }
 

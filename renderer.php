@@ -67,9 +67,10 @@ class tool_hyperplanningsync_renderer extends plugin_renderer_base {
             'cohortid',
             'maingroup',
             'othergroups',
-            'groups',
+            'groupscsv',
             'status',
             'skipped',
+            'pending',
             'createdbyid',
             'timecreated'
         );
@@ -126,15 +127,16 @@ class tool_hyperplanningsync_renderer extends plugin_renderer_base {
 
                 $tablerow[] = format_string($row->maingroup);
                 $tablerow[] = format_string($row->othergroups);
-                if (empty($row->groups)) {
+                if (empty($row->groupscsv)) {
                     $groups = get_string('error:nogroups', 'tool_hyperplanningsync');
                 } else {
-                    $groups = implode(PHP_EOL, explode(',', $row->groups));
+                    $groups = implode(PHP_EOL, explode(',', $row->groupscsv));
                 }
                 $tablerow[] = format_text($groups);
 
                 $tablerow[] = format_text($row->status);
                 $tablerow[] = empty($row->skipped) ? get_string('no') : get_string('yes');
+                $tablerow[] = empty($row->pending) ? get_string('no') : get_string('yes');
 
                 $createdby = new stdClass();
                 foreach ($createdusernamefields as $fieldname => $altname) {
