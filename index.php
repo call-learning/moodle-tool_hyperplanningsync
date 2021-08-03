@@ -23,10 +23,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_hyperplanningsync\hyperplanningsync;
+
 require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
+global $CFG, $PAGE, $OUTPUT;
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/csvlib.class.php');
-require_once(dirname(__FILE__) . '/locallib.php');
 require_once(dirname(__FILE__) . '/upload_form.php');
 
 $pageoptions = array('pagelayout' => 'report');
@@ -36,7 +38,7 @@ $pageparams = array();
 admin_externalpage_setup('tool_hyperplanningsync_import', '', $pageparams, '', $pageoptions);
 require_capability('tool/hyperplanningsync:manage', context_system::instance());
 
-$fields = tool_hyperplanningsync_get_fields();
+$fields = hyperplanningsync::get_fields();
 
 $mform = new upload_form();
 
@@ -47,7 +49,7 @@ if ($formdata = $mform->get_data()) {
     $content = $mform->get_file_content('userfile');
 
     // Validate and import.
-    if ($importid = tool_hyperplanningsync_import($content, $formdata, $returnurl)) {
+    if ($importid = hyperplanningsync::do_import($content, $formdata, $returnurl)) {
 
         // Continue to form2.
         $previewurl = new moodle_url('/admin/tool/hyperplanningsync/preview.php', array('importid' => $importid));

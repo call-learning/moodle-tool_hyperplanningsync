@@ -24,8 +24,8 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->libdir.'/formslib.php');
+global $CFG;
+require_once($CFG->libdir . '/formslib.php');
 
 /**
  * Class filter_form
@@ -41,7 +41,7 @@ class filter_form extends moodleform {
      *
      * @throws coding_exception
      */
-    public function definition () {
+    public function definition() {
         $mform = $this->_form;
 
         $mform->addElement('header', 'form_heading', get_string('filter:heading', 'tool_hyperplanningsync'));

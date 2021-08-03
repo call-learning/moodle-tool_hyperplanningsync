@@ -23,10 +23,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+use core\event\user_enrolment_created;
+use tool_hyperplanningsync\hyperplanningsync;
 
-global $CFG;
-require_once($CFG->dirroot . '/admin/tool/hyperplanningsync/locallib.php');
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Unit tests for the custom file types.
@@ -37,10 +37,17 @@ require_once($CFG->dirroot . '/admin/tool/hyperplanningsync/locallib.php');
  */
 class tool_hyperplanningsync_test extends advanced_testcase {
     /**
-     * Maximum users
+     * @var array $cohorts
      */
-    const MAX_USERS = 148;
-
+    protected $cohorts = [];
+    /**
+     * @var object $user
+     */
+    protected $user = null;
+    /**
+     * @var object $hyperplanninglog
+     */
+    protected $hyperplanninglog = null;
     /**
      * Pattern
      */
@@ -49,97 +56,55 @@ class tool_hyperplanningsync_test extends advanced_testcase {
      * Replacement
      */
     const GROUP_REPLACE_SAMPLE = '\1\3Gp\2';
-    /**
-     * SQL to get cohorts
-     */
-    const SQL_GET_COHORT = 'SELECT c.*
-              FROM {cohort} c
-              JOIN {cohort_members} cm ON c.id = cm.cohortid
-             WHERE cm.userid = :userid AND c.visible = 1';
 
     /**
-     * Sampple user list
-     * @var array
+     * User email
      */
-    protected $users = [];
+    const USER_EMAIL = 'etudiant1.etudiant1@email.com';
 
     /**
      * Setup
+     *
      * @throws dml_exception
      */
     public function setUp() {
+        global $DB;
         parent::setUp();
         $this->resetAfterTest();
-        // Setup custom profile fields.
-        $dataset = $this->createCsvDataSet(array(
-                'cohort' => __DIR__ . '/fixtures/cohort.csv',
-                'course' => __DIR__ . '/fixtures/course.csv',
-                'groups' => __DIR__ . '/fixtures/groups.csv',
-                'course_categories' => __DIR__ . '/fixtures/course_categories.csv'
-            )
-        );
-        $this->loadDataSet($dataset);
-
-        for ($j = 1; $j <= self::MAX_USERS; $j++) {
-            $user = $this->getDataGenerator()->create_user([
-                'firstname' => 'etudiant' . $j,
-                'surname' => 'etudiant' . $j,
-                'username' => 'etudiant' . $j,
-                'email' => "etudiant{$j}.etudiant{$j}@email.com"
-            ]);
-            $this->users[$j] = $user;
-        }
-
-    }
-
-    /**
-     * Get default for upload form data
-     *
-     * @return stdClass
-     * @throws dml_exception
-     */
-    protected function get_default_upload_formdata() {
-        $formdata = new \stdClass();
-        $formdata->upload_delimiter = 'comma';
-        $formdata->upload_encoding = 'UTF-8';
-        $formdata->moodle_idfield = get_config('tool_hyperplanningsync', 'moodle_idfield');
-        $formdata->group_transform_pattern = self::GROUP_PATTERN_SAMPLE;
-        $formdata->group_transform_replacement = self::GROUP_REPLACE_SAMPLE;
-        $formdata->ignoregroups = true;
-        $fields = tool_hyperplanningsync_get_fields();
-
-        foreach ($fields as $fieldname => $value) {
-            $formdata->{'field' . $fieldname} = $value;
-        }
-        $formdata->field_idfield = 'Adresse e-mail';
-        return $formdata;
-    }
-
-    /**
-     * Tests is_extension_invalid() function.
-     */
-    public function test_group_transform() {
-        global $CFG;
-        $this->resetAfterTest();
-        require_once($CFG->dirroot . '/admin/tool/hyperplanningsync/locallib.php');
-        $row = array(
+        $this->user = $this->getDataGenerator()->create_user(['email' => self::USER_EMAIL]);
+        $this->cohorts[] = $this->getDataGenerator()->create_cohort(['name' => 'A1', 'idnumber' => 'A1']);
+        $this->cohorts[] = $this->getDataGenerator()->create_cohort(['name' => 'A2', 'idnumber' => 'A2']);
+        $hyperplanninglog = array(
             'importid' => 1591286339,
+            'idfield' => 'email',
             'lineid' => 2,
             'processed' => false,
             'skipped' => false,
-            'status' => '',
-            'createdbyid' => 0,
-            'timecreated' => 1591286339,
-            'idfield' => 'email',
-            'userid' => '115001',
-            'email' => 'etudiant1.etudiant1@email.com',
+            'pending' => false,
+            'createdbyid' => 1,
+            'timecreated' => time(),
+            'idnumber' => '',
+            'username' => $this->user->username,
             'cohort' => 'A1',
             'maingroup' => '< A1 > gr8.1',
             'othergroups' => '[ A1 gr4.1] ,  [ A1 sans gr8.2] ,  [ A1 sans gr8.3] ,  [ A1 sans gr8.4] ,  [ A1 sans gr8.5] ,'
-                .'  [ A1 sans gr8.6] ,  [ A1 sans gr8.7] ,  [ A1 sans gr8.8]',
-            'cohortid' => '1',
+                . '  [ A1 sans gr8.6] ,  [ A1 sans gr8.7] ,  [ A1 sans gr8.8]',
+            'email' => self::USER_EMAIL,
+            'userid' => $this->user->id,
+            'cohortid' => $this->cohorts[0]->id,
+            'status' => '',
         );
-        $simpletransform = tool_hyperplanningsync_clean_groups($row, '', '');
+        $id = $DB->insert_record('tool_hyperplanningsync_log', $hyperplanninglog);
+        $this->hyperplanninglog = $DB->get_record('tool_hyperplanningsync_log', array('id' => $id));
+    }
+
+    /**
+     * Tests test_group_transform() function.
+     */
+    public function test_group_transform() {
+        $this->resetAfterTest();
+
+        $simpletransform = hyperplanningsync::clean_groups((array) $this->hyperplanninglog, '', '');
         $this->assertEquals(array(
             0 => 'A1 gr8.1',
             1 => 'A1 gr4.1',
@@ -151,7 +116,9 @@ class tool_hyperplanningsync_test extends advanced_testcase {
             7 => 'A1 sans gr8.7',
             8 => 'A1 sans gr8.8',
         ), $simpletransform);
-        $patterntransforms = tool_hyperplanningsync_clean_groups($row, self::GROUP_PATTERN_SAMPLE, self::GROUP_REPLACE_SAMPLE);
+        $patterntransforms =
+            hyperplanningsync::clean_groups((array) $this->hyperplanninglog, self::GROUP_PATTERN_SAMPLE,
+                self::GROUP_REPLACE_SAMPLE);
         $this->assertEquals(array(
             0 => 'A1Gp8.1',
             1 => 'A1Gp4.1',
@@ -166,121 +133,154 @@ class tool_hyperplanningsync_test extends advanced_testcase {
     }
 
     /**
-     * Import precheck fixture
+     * Tests test_assign_cohort_simple() function.
+     */
+    public function test_assign_cohort_simple() {
+        $this->resetAfterTest();
+        hyperplanningsync::assign_cohort($this->hyperplanninglog, false);
+        hyperplanningsync::force_run_cohort_sync();
+        $this->assertTrue(cohort_is_member($this->cohorts[0]->id, $this->user->id));
+        $this->assertFalse(cohort_is_member($this->cohorts[1]->id, $this->user->id));
+    }
+
+    /**
+     * Tests test_assign_cohort_already_assigned() function.
+     */
+    public function test_assign_cohort_already_assigned() {
+        $this->resetAfterTest();
+        cohort_add_member($this->cohorts[1]->id, $this->user->id); // User is in A2.
+
+        hyperplanningsync::assign_cohort($this->hyperplanninglog, true);
+        hyperplanningsync::force_run_cohort_sync();
+        $this->assertTrue(cohort_is_member($this->cohorts[0]->id, $this->user->id));
+        $this->assertFalse(cohort_is_member($this->cohorts[1]->id, $this->user->id));
+    }
+
+    /**
+     * Tests test_assign_cohort_with_enrolment() function.
+     */
+    public function test_assign_cohort_with_enrolment() {
+        $this->resetAfterTest();
+        cohort_add_member($this->cohorts[1]->id, $this->user->id); // User is in A2 and enrolled in another course.
+        $oldcourse = $this->getDataGenerator()->create_course();
+        $this->create_cohort_enrolment_and_enrol($oldcourse, $this->cohorts[1]->id, $this->user->id);
+
+        $course = $this->getDataGenerator()->create_course();
+        $this->create_cohort_enrolment_for_course($course, $this->cohorts[0]->id);
+
+        $eventsink = $this->redirectEvents();
+        hyperplanningsync::assign_cohort($this->hyperplanninglog, true);
+        hyperplanningsync::force_run_cohort_sync();
+        $this->assertTrue(cohort_is_member($this->cohorts[0]->id, $this->user->id));
+        $this->assertFalse(cohort_is_member($this->cohorts[1]->id, $this->user->id));
+        $this->assertCount(3, $eventsink->get_events());
+
+        // The user has been enrolled.
+        $events = $eventsink->get_events();
+        $this->assertTrue(is_a($events[0], '\core\event\user_enrolment_created'));
+        $this->assertEquals($course->id, $events[0]->courseid);
+        $this->assertEquals($this->user->id, $events[0]->relateduserid);
+
+        // We now check that the user has been unenrolled from oldcourse.
+        $this->assertTrue(is_a($events[1], '\core\event\role_unassigned'));
+        $this->assertEquals($oldcourse->id, $events[1]->courseid);
+        $this->assertEquals($this->user->id, $events[1]->relateduserid);
+        $this->assertEquals(5, $events[1]->objectid); // Student.
+
+        $this->assertTrue(is_a($events[2], '\core\event\user_enrolment_deleted'));
+        $this->assertEquals($oldcourse->id, $events[2]->courseid);
+        $this->assertEquals($this->user->id, $events[2]->relateduserid);
+    }
+
+    /**
+     * Tests test_assign_group_simple() function.
+     */
+    public function test_assign_group_simple() {
+        global $CFG;
+        $this->resetAfterTest();
+
+        // User is enrolled in the course.
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $group1 = $generator->create_group(['courseid' => $course->id, 'idnumber' => 'A1Gp8.1']);
+        $group2 = $generator->create_group(['courseid' => $course->id, 'idnumber' => 'A1Gp4.1']);
+
+        // User is enrolled via cohort already in A1.
+        $this->create_cohort_enrolment_and_enrol($course, $this->cohorts[0]->id, $this->user->id);
+
+        $this->hyperplanninglog->groupscsv = implode(',', ["A1Gp8.1", "A1Gp4.1"]);
+        // The user is registered in the course.
+        $eventsink = $this->redirectEvents();
+        hyperplanningsync::assign_group($this->hyperplanninglog, false);
+        $this->assertTrue(groups_is_member($group1->id, $this->user->id));
+        $this->assertTrue(groups_is_member($group2->id, $this->user->id));
+        $this->assertCount(2, $eventsink->get_events());
+        $events = $eventsink->get_events();
+        $this->assertTrue(is_a($events[0], '\core\event\group_member_added'));
+        $this->assertEquals($group1->id, $events[0]->objectid);
+        $this->assertTrue(is_a($events[1], '\core\event\group_member_added'));
+        $this->assertEquals($group2->id, $events[1]->objectid);
+    }
+
+    /**
+     * Tests test_assign_group_simple() function.
+     */
+    public function test_assign_group_simple_no_instance() {
+        global $CFG;
+        $this->resetAfterTest();
+
+        // User is enrolled in the course.
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $group1 = $generator->create_group(['courseid' => $course->id, 'idnumber' => 'A1Gp8.1']);
+        $group2 = $generator->create_group(['courseid' => $course->id, 'idnumber' => 'A1Gp4.1']);
+        $this->create_cohort_enrolment_for_course($course, $this->cohorts[0]->id);
+
+        // Instance exists but user not enrolled.
+        $this->hyperplanninglog->groupscsv = implode(',', ["A1Gp8.1", "A1Gp4.1"]);
+        // The user is not yet enrolled in the course so nothing should have happened.
+        $eventsink = $this->redirectEvents();
+        hyperplanningsync::assign_group($this->hyperplanninglog, false);
+        $this->assertCount(0, $eventsink->get_events());
+        $this->assertFalse(groups_is_member($group1->id, $this->user->id));
+        $this->assertFalse(groups_is_member($group2->id, $this->user->id));
+        $eventsink->close(); // We don't cactch events at this point because it will
+        // prevent the user_enrolment_created from being fired.
+
+        // Now register user in A1 and enroll it in the course and run adhoc
+        // tasks to catch up with group enrolment.
+        $this->getDataGenerator()->enrol_user($this->user->id, $course->id, 'student', 'cohort');
+        $this->runAdhocTasks();
+        $this->assertTrue(groups_is_member($group1->id, $this->user->id));
+        $this->assertTrue(groups_is_member($group2->id, $this->user->id));
+    }
+
+    /**
+     * Create cohort enrolment for given course
      *
-     * @param string $fixturefile
-     * @return int
-     * @throws coding_exception
-     * @throws dml_exception
-     * @throws moodle_exception
+     * @param object $course
+     * @param int $cohortid
+     * @param int $userid
      */
-    protected function import_precheck($fixturefile) {
-        // Prepare.
-        $filename = dirname(__FILE__) . '/fixtures/' . $fixturefile;
-        $content = file_get_contents($filename);
-
-        // Run the import precheck.
-        $formdata = $this->get_default_upload_formdata();
-        return tool_hyperplanningsync_import($content, $formdata, new moodle_url('/'));
+    protected function create_cohort_enrolment_and_enrol($course, $cohortid, $userid) {
+        $pluginname = 'cohort';
+        $this->create_cohort_enrolment_for_course($course, $cohortid);
+        $this->getDataGenerator()->enrol_user($userid, $course->id, 'student', $pluginname);
     }
 
     /**
-     * Tests importation preprocessing
+     * Create cohort enrolment for given course
+     *
+     * @param object $course
+     * @param int $cohortid
      */
-    public function test_import_sample_prechecks() {
-        global $DB;
-        $this->resetAfterTest();
-
-        $this->import_precheck('sample_export_hyperplanning_simple.csv');
-
-        // Check that there was at least an error for the user with no cohort/groups.
-        $this->assertContains('Cohort not found', $DB->get_field(
-            'tool_hyperplanningsync_log', 'status', array(
-                'email' => 'etudiantnonexisting.etudiant@email.com')
-        ));
-        // Check that there was at least an error for the user that does not exist.
-        $this->assertContains('User not found', $DB->get_field(
-            'tool_hyperplanningsync_log', 'status', array(
-                'email' => 'etudiantnonexisting.etudiant148@email.com')
-        ));
-        // Check that there is an error for the user who has the wrong group ID.
-        $this->assertContains('Group not found for this idnumber : A4 grHp 35', $DB->get_field(
-            'tool_hyperplanningsync_log', 'status', array(
-                'email' => 'etudiant117.etudiant117@email.com')
-        ));
-        $this->assertContains('Group not found for this idnumber : A2 sans gr8.1', $DB->get_field(
-            'tool_hyperplanningsync_log', 'status', array(
-                'email' => 'etudiant26.etudiant26@email.com')
-        ));
+    protected function create_cohort_enrolment_for_course($course, $cohortid) {
+        global $CFG;
+        $pluginname = 'cohort';
+        $CFG->enrol_plugins_enabled = $pluginname;
+        // Get the enrol plugin.
+        $plugin = enrol_get_plugin($pluginname);
+        // Enable this enrol plugin for the course.
+        $plugin->add_instance($course, ['customint1' => $cohortid]);
     }
-
-    /**
-     * Tests importation preprocessing
-     */
-    public function test_import_sample() {
-        global $DB;
-        $this->resetAfterTest();
-        // Prepare.
-        $a1cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A1'));
-        $a2cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A2'));
-        $a4cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A4'));
-
-        $student1 = $this->users[1];
-        $student26 = $this->users[26];
-
-        // Do the precheck import.
-        $importid = $this->import_precheck('sample_export_hyperplanning_simple.csv');
-
-        // Now do the processing.
-        $processform = new \stdClass();
-        $processform->removecohorts = true;
-        $processform->removegroups = true;
-        $processform->importid = $importid;
-        tool_hyperplanningsync_process($processform);
-        // And a couple of user to check if they belong to the right cohort.
-
-        $student1cohort = $DB->get_record_sql(self::SQL_GET_COHORT, array('userid' => $student1->id));
-        $student26cohort = $DB->get_record_sql(self::SQL_GET_COHORT, array('userid' => $student26->id));
-        $this->assertEquals($a1cohortid, $student1cohort->id);
-        $this->assertEquals($a2cohortid, $student26cohort->id);
-        $this->assertCount(1, $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student1->id)));
-        $this->assertCount(1, $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student26->id)));
-    }
-
-    /**
-     * Tests importation preprocessing - user already assigned to a cohort
-     */
-    public function test_import_sample_with_preassigned() {
-        global $DB;
-        $this->resetAfterTest();
-        // Prepare.
-        $a1cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A1'));
-        $a2cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A2'));
-        $a4cohortid = $DB->get_field('cohort', 'id', array('idnumber' => 'A4'));
-
-        $student1 = $this->users[1];
-        $student26 = $this->users[26];
-        cohort_add_member($a4cohortid, $student1->id); // Set User 1 to belong to cohort A4.
-
-        // Do the precheck import.
-        $importid = $this->import_precheck('sample_export_hyperplanning_simple.csv');
-
-        // Now do the processing but specify we don't remove student from cohort or group.
-        $processform = new \stdClass();
-        $processform->removecohorts = false;
-        $processform->removegroups = false;
-        $processform->importid = $importid;
-        tool_hyperplanningsync_process($processform);
-        // And a couple of user to check if they belong to the right cohort.
-
-        $student1cohort = $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student1->id));
-        $student26cohort = $DB->get_record_sql(self::SQL_GET_COHORT, array('userid' => $student26->id));
-        $this->assertCount(2, $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student1->id)));
-        $this->assertCount(1, $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student26->id)));
-        $this->assertContains($a1cohortid, array_map(function($cohort) {
-            return $cohort->id;
-        }, $student1cohort));
-        $this->assertEquals($a2cohortid, $student26cohort->id);
-    }
-
 }

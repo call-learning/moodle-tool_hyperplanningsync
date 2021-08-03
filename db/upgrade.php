@@ -66,5 +66,41 @@ function xmldb_tool_hyperplanningsync_upgrade($oldversion) {
         // Hyperplanningsync savepoint reached.
         upgrade_plugin_savepoint(true, 2020052506, 'tool', 'hyperplanningsync');
     }
+
+    if ($oldversion < 2020052508) {
+
+        // Define table tool_hyperplanningsync_group to be created.
+        $table = new xmldb_table('tool_hyperplanningsync_group');
+
+        // Adding fields to table tool_hyperplanningsync_group.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('newgroupid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('logid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table tool_hyperplanningsync_group.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('usermodified', XMLDB_KEY_FOREIGN, ['usermodified'], 'user', ['id']);
+        $table->add_key('userid_fk', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+        $table->add_key('course_fk', XMLDB_KEY_FOREIGN, ['courseid'], 'course', ['id']);
+        $table->add_key('group_fk', XMLDB_KEY_FOREIGN, ['newgroupid'], 'group', ['id']);
+        $table->add_key('logid', XMLDB_KEY_FOREIGN, ['logid'], 'tool_hyperplanningsync_log', ['id']);
+
+        // Adding indexes to table tool_hyperplanningsync_group.
+        $table->add_index('user_course_group_ix', XMLDB_INDEX_UNIQUE, ['userid', 'courseid', 'newgroupid']);
+
+        // Conditionally launch create table for tool_hyperplanningsync_group.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Hyperplanningsync savepoint reached.
+        upgrade_plugin_savepoint(true, 2020052508, 'tool', 'hyperplanningsync');
+    }
+
     return true;
 }

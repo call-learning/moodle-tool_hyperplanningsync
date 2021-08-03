@@ -23,17 +23,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-if (isset($_SERVER['REMOTE_ADDR'])) {
-    die(); // No access from web!
-}
-
+use tool_hyperplanningsync\hyperplanningsync;
+require_once(__DIR__ . '/../../../../config.php');
 define('CLI_SCRIPT', true);
+require_login();
 global $CFG;
 
-require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->libdir . '/clilib.php');
-require_once(__DIR__ . '/../locallib.php');
-
 error_reporting(E_ALL | E_STRICT);
 ini_set('display_errors', '1');
 ini_set('log_errors', '1');
@@ -75,7 +71,7 @@ if (!empty($options['help'])) {
     echo $help;
     exit(0);
 }
-$unprocessedimports = tool_hyperplanningsync_get_unprocessed_importids();
+$unprocessedimports = hyperplanningsync::get_unprocessed_importids();
 $allimportids = array_map(function($imp) {
     return $imp->importid;
 }, $unprocessedimports);
@@ -93,14 +89,10 @@ if ($options['getimportids']) {
         $allimportids = [$importid];
     }
 }
-$formdata = new stdClass();
-$formdata->removecohorts = $options['removecohorts'];
-$formdata->removegroups = $options['removegroups'];
 $progressbar = new text_progress_trace();
 
 foreach ($allimportids as $impid) {
-    $formdata->importid = $impid;
-    tool_hyperplanningsync_process($formdata, $progressbar);
+    hyperplanningsync::process($impid, $options['removecohorts'], $options['removegroups'], $progressbar);
 }
 cli_heading(get_string('success'));
 exit(0);

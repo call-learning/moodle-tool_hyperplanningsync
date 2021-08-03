@@ -23,63 +23,59 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace tool_hyperplanningsync;
 
-require_once($CFG->dirroot . '/admin/tool/hyperplanningsync/locallib.php');
+use core\event\user_created;
+use core\event\user_enrolment_created;
+use core\task\manager;
+use moodle_database;
+use moodle_exception;
+
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Event observer.
  */
-class tool_hyperplanningsync_observer {
+class observer {
 
     /**
      * Triggered via user_created event.
      *
-     * @global \moodle_database $DB
-     * @param \core\event\user_created $event
+     * @param user_created $event
      * @return bool true on success.
      */
-    public static function user_created(\core\event\user_created $event) {
-        global $DB;
-
-        // Look for any pending records for this user that haven't been skipped.
-        $sql = "SELECT l.*
-                FROM {tool_hyperplanningsync_log} l
-                JOIN {user} u ON u.id = :relateduserid
-                    AND ((l.idfield = :email AND l.email = u.email)
-                        OR (l.idfield = :idnumber AND l.idnumber = u.idnumber)
-                        OR (l.idfield = :username AND l.username = u.username)
-                    )
-                WHERE l.pending = 1
-                AND l.skipped = 0";
-
-        $params = array(
-            'email' => 'email',
-            'idnumber' => 'idnumber',
-            'username' => 'username',
-            'relateduserid' => $event->relateduserid,
-        );
-
-        if (!$imports = $DB->get_records_sql($sql, $params)) {
-            return true;
+    public static function user_created(user_created $event) {
+        $syncenabled = get_config('tool_hyperplanningsync', 'sync_new_users_enabled');
+        if (!$syncenabled) {
+            return true; // Sync is not enabled for new users.
         }
+        $importprocesstask = new process_import_for_new_user();
+        $importprocesstask->set_custom_data(['relateduserid' => $event->relateduserid]);
+        manager::queue_adhoc_task($importprocesstask);
+    }
 
-        $formdata = new stdClass();
-        // New users won't exist in cohprts or course groups so its okay for these to be false.
-        $formdata->removecohorts = false;
-        $formdata->removegroups = false;
-
-        foreach ($imports as $import) {
-            // Set pending to false and update userid and update status.
-            $import->userid = $event->relateduserid;
-            $import->pending = false;
-            $import->status .= get_string('process:usercreated', 'tool_hyperplanningsync') . PHP_EOL;
-            $DB->update_record('tool_hyperplanningsync_log', $import);
-
-            // Process the record.
-            $formdata->importid = $import->importid;
-            tool_hyperplanningsync_process($formdata, null, $import->id);
-
+    /**
+     * When user is enrolled onto a course, trigger his/her addition to the relevant group
+     *
+     * @param user_enrolment_created $event
+     */
+    public static function user_enrolled(user_enrolment_created $event) {
+        global $DB;
+        try {
+            $allgroups =
+                $DB->get_records('tool_hyperplanningsync_group', array('userid' => $event->relateduserid, 'courseid' =>
+                    $event->courseid));
+            foreach ($allgroups as $groupdef) {
+                // Update status.
+                groups_add_member($groupdef->newgroupid, $groupdef->userid);
+                // Update status for this import log.
+                $newstatus = get_string('process:addedgroup', 'tool_hyperplanningsync', $groupdef->newgroupid);
+                hyperplanningsync::update_status($groupdef->logid, $newstatus);
+                $DB->delete_records('tool_hyperplanningsync_group', array('id' => $groupdef->id));
+            }
+        } catch (moodle_exception $e) {
+            // We should just fail but not prevent other events from being processed, so we catch any exception.
+            debugging('tool_hyperplanningsync_observer:user_enrolled:' . $e->getMessage() . '-' . $e->getTraceAsString());
         }
     }
 }

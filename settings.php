@@ -23,16 +23,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_hyperplanningsync\hyperplanningsync;
+
 defined('MOODLE_INTERNAL') || die;
-
-require_once(dirname(__FILE__) . '/locallib.php');
-
 if ($hassiteconfig) {
     $ADMIN->add(
-            'accounts',
-            new admin_category(
-                'hyperplanningsync_menu',
-                new lang_string('hyperplanningsync:menu', 'tool_hyperplanningsync')));
+        'accounts',
+        new admin_category(
+            'hyperplanningsync_menu',
+            new lang_string('hyperplanningsync:menu', 'tool_hyperplanningsync')));
 
     $hyperplanningsyncimport = new admin_externalpage(
         'tool_hyperplanningsync_import',
@@ -51,9 +50,9 @@ if ($hassiteconfig) {
     $ADMIN->add('hyperplanningsync_menu', $hyperplanningsynclog);
 
     $hyperplanningsyncsettings = new admin_settingpage(
-            'tool_hyperplanningsync_settings',
-            get_string('hyperplanningsync:settings', 'tool_hyperplanningsync'),
-            'tool/hyperplanningsync:manage');
+        'tool_hyperplanningsync_settings',
+        get_string('hyperplanningsync:settings', 'tool_hyperplanningsync'),
+        'tool/hyperplanningsync:manage');
 
     $options = array(
         'email' => get_string('email'),
@@ -62,15 +61,15 @@ if ($hassiteconfig) {
     );
 
     $hyperplanningsyncsettings->add(new admin_setting_configselect(
-            'tool_hyperplanningsync/moodle_idfield', // Config name.
-            get_string('settings:moodle_idfield', 'tool_hyperplanningsync'), // Label.
-            get_string('settings:moodle_idfield_config', 'tool_hyperplanningsync'), // Help.
-            'email', // Default.
-            $options));
+        'tool_hyperplanningsync/moodle_idfield', // Config name.
+        get_string('settings:moodle_idfield', 'tool_hyperplanningsync'), // Label.
+        get_string('settings:moodle_idfield_config', 'tool_hyperplanningsync'), // Help.
+        'email', // Default.
+        $options));
 
     // Replacement and patterns for group name (see preg_replace).
     $hyperplanningsyncsettings->add(new admin_setting_configtext(
-        'tool_hyperplanningsync/group_transform_pattern', // Group name transformation as a regexp
+        'tool_hyperplanningsync/group_transform_pattern', // Group name transformation as a regexp.
         get_string('settings:group_transform_pattern', 'tool_hyperplanningsync'), // Label.
         get_string('settings:group_transform_pattern', 'tool_hyperplanningsync'), // Help.
         '/(A[0-9]+)\s*gr([0-9]\.[0-9])/i'
@@ -83,16 +82,23 @@ if ($hassiteconfig) {
         '\1\3Gr\2'
     ));
 
-    $fields = tool_hyperplanningsync_get_fields();
+    $hyperplanningsyncsettings->add(new admin_setting_configcheckbox(
+        'tool_hyperplanningsync/sync_new_users_enabled', // Config name.
+        get_string('settings:sync_new_users_enabled', 'tool_hyperplanningsync'), // Label.
+        get_string('settings:sync_new_users_enabled', 'tool_hyperplanningsync'), // Help.
+        false, // Default.
+    ));
 
-    $fields = tool_hyperplanningsync_get_fields();
+    $fields = hyperplanningsync::get_fields();
+
+    $fields = hyperplanningsync::get_fields();
     foreach ($fields as $fieldname => $default) {
         $hyperplanningsyncsettings->add(new admin_setting_configtext(
-                'tool_hyperplanningsync/field_' . $fieldname, // Config name.
-                get_string('settings:field_' . $fieldname, 'tool_hyperplanningsync'), // Label.
-                get_string('settings:field_' . $fieldname . '_config', 'tool_hyperplanningsync'), // Help.
-                $default, // Default.
-                PARAM_RAW)); // Param type.
+            'tool_hyperplanningsync/field_' . $fieldname, // Config name.
+            get_string('settings:field_' . $fieldname, 'tool_hyperplanningsync'), // Label.
+            get_string('settings:field_' . $fieldname . '_config', 'tool_hyperplanningsync'), // Help.
+            $default, // Default.
+            PARAM_RAW)); // Param type.
     }
 
     $ADMIN->add('hyperplanningsync_menu', $hyperplanningsyncsettings);

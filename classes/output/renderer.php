@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Process form for hyperplanningsync admin tool
+ * Renderer for hyperplanningsync admin tool
  *
  * @package    tool_hyperplanningsync
  * @copyright  2020 CALL Learning
@@ -23,38 +23,37 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-global $CFG;
-require_once($CFG->libdir . '/formslib.php');
+namespace tool_hyperplanningsync\output;
+
+use html_writer;
+use moodle_url;
+use plugin_renderer_base;
+use tool_hyperplanningsync\log_table;
+
+defined('MOODLE_INTERNAL') || die;
+
 /**
- * Preview form
+ * hyperplanningsync renderer
  *
  * @copyright  2020 CALL Learning
  * @author     Russell England <Russell.England@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class preview_form extends moodleform {
+class renderer extends plugin_renderer_base {
     /**
-     * Form definition
+     * Display the log
      *
-     * @throws coding_exception
+     * @param array $pageparams url parameters and filters
+     * @param moodle_url $url
+     * @return string - html to output
      */
-    public function definition() {
-        $mform = $this->_form;
-
-        // Import id.
-        $mform->addElement('hidden', 'importid');
-        $mform->setType('importid', PARAM_INT);
-
-        $mform->addElement('header', 'form_heading', get_string('process:heading', 'tool_hyperplanningsync'));
-
-        $mform->addElement('advcheckbox', 'removecohorts', get_string('process:removecohorts', 'tool_hyperplanningsync'));
-        $mform->setType('removecohorts', PARAM_BOOL);
-
-        $mform->addElement('advcheckbox', 'removegroups', get_string('process:removegroups', 'tool_hyperplanningsync'));
-        $mform->setType('removegroups', PARAM_BOOL);
-
-        $this->add_action_buttons(false, get_string('process:btn', 'tool_hyperplanningsync'));
+    public function display_log($pageparams, $url) {
+        $table = new log_table(html_writer::random_id('hyperplanning-log'), $pageparams, $url);
+        ob_start();
+        $table->out($table->pagesize, true);
+        $o = ob_get_contents();
+        ob_end_clean();
+        return $o;
     }
 
 }

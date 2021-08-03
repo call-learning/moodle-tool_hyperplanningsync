@@ -23,12 +23,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+use tool_hyperplanningsync\hyperplanningsync;
 
+defined('MOODLE_INTERNAL') || die();
+global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 
 /**
  * Class upload_form
+ *
  * @package    tool_hyperplanningsync
  * @copyright  2020 CALL Learning
  * @author     Russell England <Russell.England@gmail.com>
@@ -76,7 +79,7 @@ class upload_form extends moodleform {
         $mform->setDefault('moodle_idfield', get_config('tool_hyperplanningsync', 'moodle_idfield'));
         $mform->addRule('moodle_idfield', get_string('required'), 'required', null, 'client');
 
-        $fields = tool_hyperplanningsync_get_fields();
+        $fields = hyperplanningsync::get_fields();
 
         foreach ($fields as $fieldname => $ignore) {
             $mform->addElement('text', 'field_' . $fieldname, get_string('upload:' . $fieldname, 'tool_hyperplanningsync'));

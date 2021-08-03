@@ -44,16 +44,20 @@ $string['pluginname'] = 'Hyperplanning Import Tool';
 $string['preview:heading'] = 'Hyperplanning : Preview CSV file';
 $string['preview:heading:process'] = 'Hyperplanning : Process CSV file';
 $string['preview:results'] = 'Preview results ({$a})';
-$string['privacy:metadata'] = 'TODO: The Hyperplanning Sync tool stores email or idnumber or username and the userid + userid of importer .';
+$string['privacy:metadata'] =
+    'TODO: The Hyperplanning Sync tool stores email or idnumber or username and the userid + userid of importer .';
 $string['process:addedcohort'] = 'Added user to cohort "{$a->name}" ({$a->idnumber})';
-$string['process:addedgroup'] = 'Added user to group "{$a->groupname}" ({$a->groupid}) in course "{$a->coursename}" ({$a->courseid})';
+$string['process:addedgroup'] =
+    'Added user to group "{$a->groupname}" ({$a->groupid}) in course "{$a->coursename}" ({$a->courseid})';
 $string['process:btn'] = 'Process';
 $string['process:done'] = 'Processing done';
 $string['process:heading'] = 'Process options';
-$string['process:notenrolled'] = 'User not enrolled on course "{$a->coursename}" ({$a->courseid}), unable to add user to group "{$a->groupname}" ({$a->groupid})';
+$string['process:notenrolled'] =
+    'User not enrolled on course "{$a->coursename}" ({$a->courseid}), unable to add user to group "{$a->groupname}" ({$a->groupid})';
 $string['process:removecohorts'] = 'Remove from existing cohorts?';
 $string['process:removedcohort'] = 'Removed user from cohort "{$a->name}" ({$a->idnumber})';
-$string['process:removedgroup'] = 'Removed user from group "{$a->groupname}" ({$a->groupid}) in course "{$a->coursename}" ({$a->courseid})';
+$string['process:removedgroup'] =
+    'Removed user from group "{$a->groupname}" ({$a->groupid}) in course "{$a->coursename}" ({$a->courseid})';
 $string['process:removegroups'] = 'Remove from existing groups?';
 $string['process:started'] = 'Processing start';
 $string['process:usercreated'] = 'Pending user created';
@@ -62,8 +66,8 @@ $string['report:cohort'] = 'Cohort ID Number';
 $string['report:cohortid'] = 'Matching Cohort Name';
 $string['report:createdbyid'] = 'Imported by';
 $string['report:groupscsv'] = 'Cleaned Group ID numbers';
-$string['report:idfield'] = 'ID field';
-$string['report:idvalue'] = 'ID value';
+$string['report:fullname'] = 'ID field';
+$string['report:idvalue'] = 'ID Number';
 $string['report:importid'] = 'Import ID';
 $string['report:lineid'] = 'Line number';
 $string['report:maingroup'] = 'Main Group';
@@ -89,6 +93,7 @@ $string['settings:group_transform_pattern_config'] = 'Regexp for group name (pat
 $string['settings:group_transform_replacement'] = 'Regexp replacement for group name';
 $string['settings:group_transform_replacement_config'] = 'Regexp replacement for group name,
  if any (leave it empty if you don\'t want any)';
+$string['settings:sync_new_users_enabled'] = 'Synchronise new users at creation';
 $string['upload:btn'] = 'Upload';
 $string['upload:cohort'] = 'Cohort field name';
 $string['upload:delimiter'] = 'CSV delimiter';
@@ -114,7 +119,7 @@ $string['viewlog:deleteconfirmpartial'] = 'Are you sure you want to clear all ex
 $string['viewlog:deletedall'] = 'Cleared all import logs';
 $string['viewlog:deletedpartial'] = 'Cleared all except latest import log';
 $string['viewlog:heading'] = 'Import log';
-$string['viewlog:results'] = 'Search results ({$a})';
+$string['viewlog:results'] = 'Search results';
 
 $string['upload:info'] = 'Users may be uploaded via text file. The format of the file should be as follows:
 

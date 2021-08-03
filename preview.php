@@ -22,10 +22,13 @@
  * @author     Russell England <Russell.England@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use tool_hyperplanningsync\hyperplanningsync;
+
 define('NO_OUTPUT_BUFFERING', true);
 require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
+global $CFG, $PAGE, $OUTPUT;
 require_once($CFG->libdir . '/adminlib.php');
-require_once(dirname(__FILE__) . '/locallib.php');
 require_once(dirname(__FILE__) . '/preview_form.php');
 
 $pageparams = array();
@@ -53,7 +56,8 @@ if ($formdata = $mform->get_data()) {
     $progressbar->create();
 
     // Lets do this.
-    tool_hyperplanningsync_process($formdata, $progressbar);
+    hyperplanningsync::process($formdata->importid, $formdata->removecohorts, $formdata->removegroups,
+        $progressbar);
 
     $viewlogurl = new moodle_url('/admin/tool/hyperplanningsync/viewlog.php', $pageparams);
     echo $OUTPUT->continue_button($viewlogurl, get_string('continue'), 'get');
@@ -67,11 +71,9 @@ echo $OUTPUT->heading(get_string('preview:heading', 'tool_hyperplanningsync'));
 $mform->set_data($pageparams);
 $mform->display();
 
-list($rows, $totalcount) = tool_hyperplanningsync_get_log($pageparams);
-
-echo $OUTPUT->heading(get_string('preview:results', 'tool_hyperplanningsync', $totalcount), 3);
+echo $OUTPUT->heading(get_string('preview:results', 'tool_hyperplanningsync'), 3);
 
 $renderer = $PAGE->get_renderer('tool_hyperplanningsync');
 
-echo $renderer->display_log($rows, $pageparams, $totalcount, $thisurl);
+echo $renderer->display_log($pageparams, $thisurl);
 echo $OUTPUT->footer();
