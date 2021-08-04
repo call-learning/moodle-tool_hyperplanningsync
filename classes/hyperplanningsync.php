@@ -88,7 +88,6 @@ class hyperplanningsync {
         $params = array(
             'importid' => $importid,
             'skipped' => false,
-            'pending' => false,
             'processed' => false,
         );
 
@@ -109,6 +108,10 @@ class hyperplanningsync {
         $rowindex = 0;
 
         foreach ($rows as $row) {
+            // If row does not contains userid we skip it.
+            if (empty($row->userid)) {
+                continue;
+            }
             // Update status.
             $newstatus = get_string('process:started', 'tool_hyperplanningsync');
             self::update_status($row->id, $newstatus);

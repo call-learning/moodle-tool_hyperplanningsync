@@ -23,12 +23,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
  */
 
-namespace tool_hyperplanningsync;
+namespace tool_hyperplanningsync\task;
 
 use coding_exception;
 use core\task\adhoc_task;
 use dml_exception;
 use moodle_exception;
+use tool_hyperplanningsync\hyperplanningsync;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -67,7 +68,7 @@ class process_import_for_new_user extends adhoc_task {
             'email' => 'email',
             'idnumber' => 'idnumber',
             'username' => 'username',
-            'relateduserid' => $data['relateduserid'],
+            'relateduserid' => $data->relateduserid,
         );
 
         if (!$imports = $DB->get_records_sql($sql, $params)) {
@@ -76,11 +77,13 @@ class process_import_for_new_user extends adhoc_task {
 
         try {
             foreach ($imports as $import) {
+                // Set the userid.
+                $DB->set_field('tool_hyperplanningsync_log', 'userid',  $data->relateduserid);
                 // New users won't exist in cohorts or course groups so it is okay for these to be false.
                 hyperplanningsync::process($import->importid, false,
                     false, null, $import->id);
                 // Set pending to false and update userid and update status.
-                $import->userid = $data['relateduserid'];
+                $import->userid = $data->relateduserid;
                 $import->pending = false;
                 $import->status .= get_string('process:usercreated', 'tool_hyperplanningsync') . PHP_EOL;
                 $DB->update_record('tool_hyperplanningsync_log', $import);

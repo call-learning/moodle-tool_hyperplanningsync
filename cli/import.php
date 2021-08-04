@@ -22,11 +22,9 @@
  * @author     Laurent David (laurent@call-learning.fr)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-use tool_hyperplanningsync\hyperplanningsync;
-require_once(__DIR__ . '/../../../../config.php');
 define('CLI_SCRIPT', true);
-require_login();
+require_once(__DIR__ . '/../../../../config.php');
+use tool_hyperplanningsync\hyperplanningsync;
 global $CFG;
 
 require_once($CFG->libdir . '/clilib.php');

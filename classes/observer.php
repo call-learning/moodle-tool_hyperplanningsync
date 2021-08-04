@@ -28,8 +28,8 @@ namespace tool_hyperplanningsync;
 use core\event\user_created;
 use core\event\user_enrolment_created;
 use core\task\manager;
-use moodle_database;
 use moodle_exception;
+use tool_hyperplanningsync\task\process_import_for_new_user;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -67,11 +67,19 @@ class observer {
                     $event->courseid));
             foreach ($allgroups as $groupdef) {
                 // Update status.
-                groups_add_member($groupdef->newgroupid, $groupdef->userid);
-                // Update status for this import log.
-                $newstatus = get_string('process:addedgroup', 'tool_hyperplanningsync', $groupdef->newgroupid);
-                hyperplanningsync::update_status($groupdef->logid, $newstatus);
-                $DB->delete_records('tool_hyperplanningsync_group', array('id' => $groupdef->id));
+                $result = groups_add_member($groupdef->newgroupid, $groupdef->userid);
+                if ($result) {
+                    // Update status for this import log.
+                    $info = (object) [
+                        'groupname' => $DB->get_field('groups', 'name', array('id' => $groupdef->newgroupid)),
+                        'groupid' => $groupdef->newgroupid,
+                        'coursename' => $DB->get_field('course', 'fullname', array('id' => $event->courseid)),
+                        'courseid' => $event->courseid
+                    ];
+                    $newstatus = get_string('process:addedgroup', 'tool_hyperplanningsync', $info);
+                    hyperplanningsync::update_status($groupdef->logid, $newstatus);
+                    $DB->delete_records('tool_hyperplanningsync_group', array('id' => $groupdef->id));
+                }
             }
         } catch (moodle_exception $e) {
             // We should just fail but not prevent other events from being processed, so we catch any exception.
