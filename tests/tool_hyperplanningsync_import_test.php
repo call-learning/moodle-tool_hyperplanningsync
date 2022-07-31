@@ -23,9 +23,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use tool_hyperplanningsync\hyperplanningsync;
+namespace tool_hyperplanningsync;
 
-defined('MOODLE_INTERNAL') || die();
+use advanced_testcase;
+use moodle_url;
+use stdClass;
 
 /**
  * Unit tests for the custom file types.
@@ -33,6 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * @package tool_hyperplanningsync
  * @copyright 2020 CALL Learning
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @coversDefaultClass \tool_hyperplanningsync\hyperplanningsync
  */
 class tool_hyperplanningsync_import_test extends advanced_testcase {
     /**
@@ -66,7 +69,6 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
     /**
      * Setup
      *
-     * @throws dml_exception
      */
     public function setUp() {
         parent::setUp();
@@ -95,6 +97,7 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
 
     /**
      * Tests importation preprocessing
+     * @covers \tool_hyperplanningsync\hyperplanningsync::do_import
      */
     public function test_import_sample_prechecks() {
         global $DB;
@@ -128,9 +131,6 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
      *
      * @param string $fixturefile
      * @return int
-     * @throws coding_exception
-     * @throws dml_exception
-     * @throws moodle_exception
      */
     protected function import_precheck($fixturefile) {
         // Prepare.
@@ -146,7 +146,6 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
      * Get default for upload form data
      *
      * @return stdClass
-     * @throws dml_exception
      */
     protected function get_default_upload_formdata() {
         $formdata = new stdClass();
@@ -167,6 +166,7 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
 
     /**
      * Tests importation preprocessing
+     * @covers \tool_hyperplanningsync\hyperplanningsync::process
      */
     public function test_import_sample() {
         global $DB;
@@ -196,6 +196,7 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
 
     /**
      * Tests importation preprocessing - user already assigned to a cohort
+     * @covers \tool_hyperplanningsync\hyperplanningsync::process
      */
     public function test_import_sample_with_preassigned() {
         global $DB;

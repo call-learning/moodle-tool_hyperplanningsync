@@ -29,8 +29,6 @@ use moodle_url;
 use ReflectionProperty;
 use table_sql;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Hyperplanning log table class
  *

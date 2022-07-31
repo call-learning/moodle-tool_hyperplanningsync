@@ -30,8 +30,6 @@ use moodle_url;
 use plugin_renderer_base;
 use tool_hyperplanningsync\log_table;
 
-defined('MOODLE_INTERNAL') || die;
-
 /**
  * hyperplanningsync renderer
  *

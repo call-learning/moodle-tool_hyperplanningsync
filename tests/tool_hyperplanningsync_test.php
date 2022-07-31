@@ -22,11 +22,9 @@
  * @author     Laurent David <laurent@call-learning.fr>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-use core\event\user_enrolment_created;
+namespace tool_hyperplanningsync;
+use advanced_testcase;
 use tool_hyperplanningsync\hyperplanningsync;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Unit tests for the custom file types.
@@ -34,6 +32,7 @@ defined('MOODLE_INTERNAL') || die();
  * @package tool_hyperplanningsync
  * @copyright 2020 CALL Learning
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @coversDefaultClass \tool_hyperplanningsync\hyperplanningsync
  */
 class tool_hyperplanningsync_test extends advanced_testcase {
     /**
@@ -65,7 +64,6 @@ class tool_hyperplanningsync_test extends advanced_testcase {
     /**
      * Setup
      *
-     * @throws dml_exception
      */
     public function setUp() {
         global $DB;
@@ -100,6 +98,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
 
     /**
      * Tests test_group_transform() function.
+     * @covers \tool_hyperplanningsync\hyperplanningsync::clean_groups
      */
     public function test_group_transform() {
         $this->resetAfterTest();
@@ -134,6 +133,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
 
     /**
      * Tests test_assign_cohort_simple() function.
+     * @covers \tool_hyperplanningsync\hyperplanningsync::assign_cohort
      */
     public function test_assign_cohort_simple() {
         $this->resetAfterTest();
@@ -145,6 +145,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
 
     /**
      * Tests test_assign_cohort_already_assigned() function.
+     * @covers \tool_hyperplanningsync\hyperplanningsync::assign_cohort
      */
     public function test_assign_cohort_already_assigned() {
         $this->resetAfterTest();
@@ -158,6 +159,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
 
     /**
      * Tests test_assign_cohort_with_enrolment() function.
+     * @covers \tool_hyperplanningsync\hyperplanningsync::assign_cohort
      */
     public function test_assign_cohort_with_enrolment() {
         $this->resetAfterTest();
@@ -194,6 +196,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
 
     /**
      * Tests test_assign_group_simple() function.
+     * @covers \tool_hyperplanningsync\hyperplanningsync::assign_group
      */
     public function test_assign_group_simple() {
         global $CFG;
@@ -224,6 +227,8 @@ class tool_hyperplanningsync_test extends advanced_testcase {
 
     /**
      * Tests test_assign_group_simple() function.
+     * @covers \tool_hyperplanningsync\hyperplanningsync::assign_group
+     *
      */
     public function test_assign_group_simple_no_instance() {
         global $DB;
@@ -265,6 +270,10 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         $this->assertStringContainsString('Added user to group "A1Gp4.1"', $hyperplanninglog->status);
     }
 
+    /**
+     * Tests add user after cohort creation.
+     * @covers \tool_hyperplanningsync\hyperplanningsync::process
+     */
     public function test_insert_cohort_after_user_creation() {
         global $DB;
         $this->resetAfterTest();

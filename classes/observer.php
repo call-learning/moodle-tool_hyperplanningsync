@@ -31,8 +31,6 @@ use core\task\manager;
 use moodle_exception;
 use tool_hyperplanningsync\task\process_import_for_new_user;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Event observer.
  */

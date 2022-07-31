@@ -27,7 +27,6 @@ namespace tool_hyperplanningsync\privacy;
 
 use core_privacy\local\metadata\null_provider;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class provider

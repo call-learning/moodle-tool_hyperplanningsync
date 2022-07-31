@@ -38,8 +38,6 @@ use progress_bar;
 use stdClass;
 use text_progress_trace;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Hyperplanning syn class
  *

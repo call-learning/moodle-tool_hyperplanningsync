@@ -31,8 +31,6 @@ use dml_exception;
 use moodle_exception;
 use tool_hyperplanningsync\hyperplanningsync;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Process for new users
  *
