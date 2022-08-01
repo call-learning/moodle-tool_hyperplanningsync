@@ -99,6 +99,48 @@ function xmldb_tool_hyperplanningsync_upgrade($oldversion) {
         // Hyperplanningsync savepoint reached.
         upgrade_plugin_savepoint(true, 2020052508, 'tool', 'hyperplanningsync');
     }
+    if ($oldversion < 2022080200) {
+
+        // Rename field statustext on table tool_hyperplanningsync_log to NEWNAMEGOESHERE.
+        $table = new xmldb_table('tool_hyperplanningsync_log');
+        $field = new xmldb_field('status', XMLDB_TYPE_TEXT, null, null, null, null, null, 'groupscsv');
+
+        // Launch rename field statustext.
+        $dbman->rename_field($table, $field, 'statustext');
+
+        // Define field status to be added to tool_hyperplanningsync_log.
+        $table = new xmldb_table('tool_hyperplanningsync_log');
+        $field = new xmldb_field('status', XMLDB_TYPE_INTEGER, '4', null, null, null, '0', 'statustext');
+
+        // Conditionally launch add field status.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('pending');
+
+        // Conditionally launch drop field pending.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        $field = new xmldb_field('processed');
+
+        // Conditionally launch drop field pending.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        $field = new xmldb_field('skipped');
+
+        // Conditionally launch drop field pending.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Hyperplanningsync savepoint reached.
+        upgrade_plugin_savepoint(true, 2022080200, 'tool', 'hyperplanningsync');
+    }
 
     return true;
 }

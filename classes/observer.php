@@ -42,7 +42,7 @@ class observer {
      * @param user_created $event
      * @return bool true on success.
      */
-    public static function user_created(user_created $event) {
+    public static function user_created(user_created $event): bool {
         $syncenabled = get_config('tool_hyperplanningsync', 'sync_new_users_enabled');
         if (!$syncenabled) {
             return true; // Sync is not enabled for new users.
@@ -50,6 +50,7 @@ class observer {
         $importprocesstask = new process_import_for_new_user();
         $importprocesstask->set_custom_data(['relateduserid' => $event->relateduserid]);
         manager::queue_adhoc_task($importprocesstask);
+        return true;
     }
 
     /**
@@ -57,7 +58,7 @@ class observer {
      *
      * @param user_enrolment_created $event
      */
-    public static function user_enrolled(user_enrolment_created $event) {
+    public static function user_enrolled(user_enrolment_created $event): void {
         global $DB;
         try {
             $allgroups =
@@ -75,7 +76,7 @@ class observer {
                         'courseid' => $event->courseid
                     ];
                     $newstatus = get_string('process:addedgroup', 'tool_hyperplanningsync', $info);
-                    hyperplanningsync::update_status($groupdef->logid, $newstatus);
+                    hyperplanningsync::update_status_text($groupdef->logid, $newstatus);
                     $DB->delete_records('tool_hyperplanningsync_group', array('id' => $groupdef->id));
                 }
             }

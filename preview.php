@@ -71,7 +71,7 @@ echo $OUTPUT->heading(get_string('preview:heading', 'tool_hyperplanningsync'));
 $mform->set_data($pageparams);
 $mform->display();
 
-echo $OUTPUT->heading(get_string('preview:results', 'tool_hyperplanningsync'), 3);
+echo $OUTPUT->heading(get_string('preview:results', 'tool_hyperplanningsync', $pageparams['importid']), 3);
 
 $renderer = $PAGE->get_renderer('tool_hyperplanningsync');
 

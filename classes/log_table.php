@@ -62,8 +62,7 @@ class log_table extends table_sql {
             'othergroups',
             'groupscsv',
             'status',
-            'skipped',
-            'pending',
+            'statustext',
             'createdbyid',
             'timecreated'
         );
@@ -79,7 +78,7 @@ class log_table extends table_sql {
         $this->sortable(true);
         $this->collapsible(true);
         $this->is_downloadable(true);
-
+        $this->initialbars(true);
         $this->set_attribute('cellspacing', '0');
         $this->set_attribute('id', 'tool-hyperplanningsync-log');
         $this->set_attribute('class', 'generaltable');
@@ -94,7 +93,7 @@ class log_table extends table_sql {
      *
      * @param array $filters
      */
-    protected function set_sql_from_filters($filters) {
+    protected function set_sql_from_filters(array $filters): void {
         global $DB;
         $params = array();
         $wheres = array();
@@ -140,7 +139,11 @@ class log_table extends table_sql {
                 LEFT JOIN {user} u ON u.id = l.userid
                 LEFT JOIN {user} createdby ON createdby.id = l.createdbyid
                 LEFT JOIN {cohort} c ON c.id = l.cohortid";
-        $this->set_sql($fields, $from, $where, $params);
+
+        // Check if any additional filtering is required.
+        [$additionalwhere, $additionalparams] = $this->get_sql_where();
+
+        $this->set_sql($fields, $from, $where . ' AND (' . $additionalwhere . ')', array_merge($params, $additionalparams));
     }
 
     /**
@@ -148,7 +151,7 @@ class log_table extends table_sql {
      *
      * @return array
      */
-    public function get_sql_where() {
+    public function get_sql_where(): array {
         global $DB;
 
         $conditions = array();
@@ -169,5 +172,14 @@ class log_table extends table_sql {
         }
 
         return array(implode(" AND ", $conditions), $params);
+    }
+
+    /**
+     * @param $row
+     * @return \lang_string|string
+     * @throws \coding_exception
+     */
+    public function col_status($row) {
+        return get_string('status:' . $row->status, 'tool_hyperplanningsync');
     }
 }

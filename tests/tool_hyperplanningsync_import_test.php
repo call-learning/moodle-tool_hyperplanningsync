@@ -22,7 +22,6 @@
  * @author     Laurent David <laurent@call-learning.fr>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 namespace tool_hyperplanningsync;
 
 use advanced_testcase;
@@ -97,6 +96,7 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
 
     /**
      * Tests importation preprocessing
+     *
      * @covers \tool_hyperplanningsync\hyperplanningsync::do_import
      */
     public function test_import_sample_prechecks() {
@@ -107,21 +107,21 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
 
         // Check that there was at least an error for the user with no cohort/groups.
         $this->assertContains('Cohort not found', $DB->get_field(
-            'tool_hyperplanningsync_log', 'status', array(
+            'tool_hyperplanningsync_log', 'statustext', array(
                 'email' => 'etudiantnonexisting.etudiant@email.com')
         ));
         // Check that there was at least an error for the user that does not exist.
         $this->assertContains('User not found', $DB->get_field(
-            'tool_hyperplanningsync_log', 'status', array(
+            'tool_hyperplanningsync_log', 'statustext', array(
                 'email' => 'etudiantnonexisting.etudiant148@email.com')
         ));
         // Check that there is an error for the user who has the wrong group ID.
         $this->assertContains('Group not found for this idnumber : A4 grHp 35', $DB->get_field(
-            'tool_hyperplanningsync_log', 'status', array(
+            'tool_hyperplanningsync_log', 'statustext', array(
                 'email' => 'etudiant117.etudiant117@email.com')
         ));
         $this->assertContains('Group not found for this idnumber : A2 sans gr8.1', $DB->get_field(
-            'tool_hyperplanningsync_log', 'status', array(
+            'tool_hyperplanningsync_log', 'statustext', array(
                 'email' => 'etudiant26.etudiant26@email.com')
         ));
     }
@@ -166,6 +166,7 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
 
     /**
      * Tests importation preprocessing
+     *
      * @covers \tool_hyperplanningsync\hyperplanningsync::process
      */
     public function test_import_sample() {
@@ -183,7 +184,7 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
         $importid = $this->import_precheck('sample_export_hyperplanning_simple.csv');
 
         // Now do the processing.
-        hyperplanningsync::process($importid, true, true);
+        hyperplanningsync::process($importid, true, true, null, null, false);
         // And a couple of user to check if they belong to the right cohort.
 
         $student1cohort = $DB->get_record_sql(self::SQL_GET_COHORT, array('userid' => $student1->id));
@@ -196,6 +197,7 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
 
     /**
      * Tests importation preprocessing - user already assigned to a cohort
+     *
      * @covers \tool_hyperplanningsync\hyperplanningsync::process
      */
     public function test_import_sample_with_preassigned() {
@@ -214,7 +216,7 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
         $importid = $this->import_precheck('sample_export_hyperplanning_simple.csv');
 
         // Now do the processing but specify we don't remove student from cohort or group.
-        hyperplanningsync::process($importid, false, false);
+        hyperplanningsync::process($importid, false, false, null, null, false);
         // And a couple of user to check if they belong to the right cohort.
 
         $student1cohort = $DB->get_records_sql(self::SQL_GET_COHORT, array('userid' => $student1->id));

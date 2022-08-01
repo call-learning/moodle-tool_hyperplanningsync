@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Adhoc task to process import
- *
- * @package    tool_hyperplanningsync
- * @copyright  2020 CALL Learning
- * @author     Laurent David (laurent@call-learning.fr)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
- */
-
 namespace tool_hyperplanningsync\task;
 
 use coding_exception;
@@ -32,7 +23,7 @@ use moodle_exception;
 use tool_hyperplanningsync\hyperplanningsync;
 
 /**
- * Process for new users
+ * Import process for new users
  *
  * @package    tool_hyperplanningsync
  * @copyright  2020 CALL Learning
@@ -59,14 +50,14 @@ class process_import_for_new_user extends adhoc_task {
                         OR (l.idfield = :idnumber AND l.idnumber = u.idnumber)
                         OR (l.idfield = :username AND l.username = u.username)
                     )
-                WHERE l.pending = 1
-                AND l.skipped = 0";
+                WHERE l.status = :statuspending";
 
         $params = array(
             'email' => 'email',
             'idnumber' => 'idnumber',
             'username' => 'username',
             'relateduserid' => $data->relateduserid,
+            'statuspending' => hyperplanningsync::STATUS_PENDING
         );
 
         if (!$imports = $DB->get_records_sql($sql, $params)) {
@@ -76,14 +67,14 @@ class process_import_for_new_user extends adhoc_task {
         try {
             foreach ($imports as $import) {
                 // Set the userid.
-                $DB->set_field('tool_hyperplanningsync_log', 'userid',  $data->relateduserid);
+                $DB->set_field('tool_hyperplanningsync_log', 'userid', $data->relateduserid);
                 // New users won't exist in cohorts or course groups so it is okay for these to be false.
                 hyperplanningsync::process($import->importid, false,
-                    false, null, $import->id);
+                    false, null, $import->id, false); // Immediate action (deferred = false).
                 // Set pending to false and update userid and update status.
                 $import->userid = $data->relateduserid;
-                $import->pending = false;
-                $import->status .= get_string('process:usercreated', 'tool_hyperplanningsync') . PHP_EOL;
+                $import->status = hyperplanningsync::STATUS_PROCESSED;
+                $import->statustext .= get_string('process:usercreated', 'tool_hyperplanningsync') . PHP_EOL;
                 $DB->update_record('tool_hyperplanningsync_log', $import);
             }
         } catch (moodle_exception $e) {
