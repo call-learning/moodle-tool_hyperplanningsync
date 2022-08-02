@@ -69,8 +69,7 @@ class hyperplanningsync {
     /**
      * Record has been processed
      */
-    const STATUS_PROCESSED = 100;
-
+    const STATUS_DONE = 100;
 
     /**
      * Get a list of importid that have not been processed
@@ -84,7 +83,7 @@ class hyperplanningsync {
         // Get unprocessed import ids.
         return $DB->get_records_sql('SELECT importid, timecreated
                 FROM {tool_hyperplanningsync_log} WHERE status = :statusinited GROUP BY importid', [
-                    'statusinited' => self::STATUS_INITED
+            'statusinited' => self::STATUS_INITED
         ]);
     }
 
@@ -138,7 +137,6 @@ class hyperplanningsync {
             }
             // Update status.
             $newstatus = get_string('process:started', 'tool_hyperplanningsync');
-            self::update_status($row->id, self::STATUS_PROCESSING);
             self::update_status_text($row->id, $newstatus);
             if ($progressbar) {
                 if ($progressbar instanceof progress_bar) {
@@ -193,17 +191,17 @@ class hyperplanningsync {
 
         $DB->set_field('tool_hyperplanningsync_log', 'statustext', $statustext, array('id' => $logid));
     }
+
     /**
-     * Update the status text.
+     * Update the status to done.
      *
      * @param int $logid
-     * @param int $newstatus
      * @return bool
      * @throws dml_exception
      */
-    public static function update_status(int $logid, int $newstatus): void {
+    public static function set_status_done(int $logid): void {
         global $DB;
-        $DB->set_field('tool_hyperplanningsync_log', 'status', $newstatus, array('id' => $logid));
+        $DB->set_field('tool_hyperplanningsync_log', 'status', self::STATUS_DONE, array('id' => $logid));
     }
 
     /**

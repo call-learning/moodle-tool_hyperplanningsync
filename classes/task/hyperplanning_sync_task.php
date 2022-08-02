@@ -42,7 +42,7 @@ class hyperplanning_sync_task extends adhoc_task {
         hyperplanningsync::assign_group($cdata->row, $cdata->removegroups);
         // Update status.
         $newstatus = get_string('process:done', 'tool_hyperplanningsync');
-        hyperplanningsync::update_status($cdata->row->id, hyperplanningsync::STATUS_PROCESSED);
+        hyperplanningsync::set_status_done($cdata->row->id);
         hyperplanningsync::update_status_text($cdata->row->id, $newstatus);
     }
 }

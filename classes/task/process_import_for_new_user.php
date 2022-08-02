@@ -68,12 +68,13 @@ class process_import_for_new_user extends adhoc_task {
             foreach ($imports as $import) {
                 // Set the userid.
                 $DB->set_field('tool_hyperplanningsync_log', 'userid', $data->relateduserid);
+                $DB->set_field('tool_hyperplanningsync_log', 'status', hyperplanningsync::STATUS_INITED);
                 // New users won't exist in cohorts or course groups so it is okay for these to be false.
                 hyperplanningsync::process($import->importid, false,
                     false, null, $import->id, false); // Immediate action (deferred = false).
                 // Set pending to false and update userid and update status.
                 $import->userid = $data->relateduserid;
-                $import->status = hyperplanningsync::STATUS_PROCESSED;
+                $import->status = hyperplanningsync::STATUS_DONE;
                 $import->statustext .= get_string('process:usercreated', 'tool_hyperplanningsync') . PHP_EOL;
                 $DB->update_record('tool_hyperplanningsync_log', $import);
             }
