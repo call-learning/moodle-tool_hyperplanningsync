@@ -13,18 +13,24 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
- * Plugin version info
+ * Services
  *
  * @package    tool_hyperplanningsync
- * @copyright  2020 CALL Learning
- * @author     Russell England <Russell.England@gmail.com>
+ * @copyright  2022 CALL Learning
+ * @author     Laurent David <laurent@call-learning.fr>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->version = 2022080202; // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires = 2018120310; // Requires this Moodle version.
-$plugin->component = 'tool_hyperplanningsync'; // Full name of the plugin (used for diagnostics).
+defined('MOODLE_INTERNAL') || die;
+$functions = [
+    'tool_hyperplanningsync_import_status' => [
+        'classname' => 'tool_hyperplanningsync\external\import_status',
+        'methodname' => 'execute',
+        'classpath' => '',
+        'description' => 'Check import status',
+        'type' => 'read',
+        'capabilities' => '',
+        'ajax' => true,
+        'loginrequired' => true,
+    ],
+];

@@ -1,0 +1,80 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tool_hyperplanningsync/import_status
+
+    Current importation status.
+
+    Classes required for JS:
+
+    Data attributes required for JS:
+
+
+    Example context (json):
+    {
+       "status": [
+        {
+            "importid": "1234354",
+            "importname": "1234354",
+            "currentprogress": "50",
+            "laststatus": "<div>htmlstatus<div>"
+        },
+        ]
+    }
+}}
+<div class="tool-hyperplanning-import-status">
+    {{#status}}
+        <div class="card col">
+            <div class="card-header">
+                <span>{{#str}}hyperplanningsync:progress:single, tool_hyperplanningsync, {{importname}}{{/str}}</span>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{currentprogress}}"
+                         style="width:{{currentprogress}}%"> {{currentprogress}}%
+                    </div>
+                </div>
+                {{#countbystatus}}
+                    <div class="badge badge-pill badge-secondary">
+                        {{statusname}}: {{count}}
+                    </div>
+                {{/countbystatus}}
+            </div>
+            <div class="card-body">
+                <div class="status">
+                    <h3>{{#str}}hyperplanningsync:lateststatus, tool_hyperplanningsync{{/str}}</h3>
+                    {{#lateststatus}}
+                        <div class="badge badge-primary m-3">{{userfullname}}</div>
+                        <ul>
+                            {{#status}}
+                                <li>{{info}}</li>
+                            {{/status}}
+                        </ul>
+                    {{/lateststatus}}
+                </div>
+
+            </div>
+            <div class="card-body text-center">
+                <a href="{{{ config.wwwroot }}}/admin/tool/hyperplanningsync/viewlog.php?id={{importid}}" class="card-link btn btn-primary">
+                {{#str}}hyperplanningsync:viewlog, tool_hyperplanningsync{{/str}}
+                </a>
+            </div>
+        </div>
+
+    {{/status}}
+    {{^status}}
+        <div class="alert-warning">{{#str}}noimportations, tool_hyperplanningsync{{/str}}</div>
+    {{/status}}
+</div>

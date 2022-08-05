@@ -50,6 +50,11 @@ class upload_form extends moodleform {
 
         $mform->addElement('header', 'form_heading', get_string('upload:heading:file', 'tool_hyperplanningsync'));
 
+        $mform->addElement('text', 'import_name', get_string('upload:importnname', 'tool_hyperplanningsync'));
+        $mform->setType('import_name', PARAM_TEXT);
+        $mform->addRule('import_name', get_string('required'), 'required', null, 'client');
+        $mform->setDefault('import_name', userdate(time(), get_string('strftimedatetime')));
+
         $mform->addElement('filepicker', 'userfile', get_string('file'));
         $mform->addRule('userfile', null, 'required');
 

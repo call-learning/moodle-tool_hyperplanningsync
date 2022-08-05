@@ -14,26 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Hyperplanning sync class
- *
- * @package    tool_hyperplanningsync
- * @copyright  2020 CALL Learning
- * @author     Laurent David (laurent@call-learning.fr)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace tool_hyperplanningsync;
+defined('MOODLE_INTERNAL') || die();
 
 use coding_exception;
 use context_course;
-use core\task\adhoc_task;
 use core\task\manager;
 use core_php_time_limit;
 use core_text;
 use csv_import_reader;
 use dml_exception;
-use moodle_database;
 use moodle_exception;
 use moodle_url;
 use progress_bar;
@@ -41,8 +31,13 @@ use stdClass;
 use text_progress_trace;
 use tool_hyperplanningsync\task\hyperplanning_sync_task;
 
+global $CFG;
+require_once($CFG->dirroot . '/cohort/lib.php');
+require_once($CFG->dirroot . '/group/lib.php');
+require_once($CFG->libdir . '/csvlib.class.php');
+
 /**
- * Hyperplanning syn class
+ * Hyperplanning sync class
  *
  * @package    tool_hyperplanningsync
  * @copyright  2020 CALL Learning
@@ -62,10 +57,6 @@ class hyperplanningsync {
      * Record is on hold and waiting for user to be created
      */
     const STATUS_PENDING = 2;
-    /**
-     * Record is being processed
-     */
-    const STATUS_PROCESSING = 10;
     /**
      * Record has been processed
      */
@@ -96,14 +87,10 @@ class hyperplanningsync {
      * @param object|null $progressbar
      * @param int|null $logid
      * @param bool|null $deferred
-     * @throws coding_exception
-     * @throws dml_exception
      */
     public static function process(int $importid, ?bool $removecohorts = false, ?bool $removegroups = false,
         ?object $progressbar = null, ?int $logid = null, ?bool $deferred = true): void {
-        global $DB, $CFG;
-        require_once($CFG->dirroot . '/cohort/lib.php');
-        require_once($CFG->dirroot . '/group/lib.php');
+        global $DB;
         // Raise time limit so we can process the full set.
         // TODO: Use a adhoc task.
         core_php_time_limit::raise(HOURSECS);
@@ -131,21 +118,13 @@ class hyperplanningsync {
         $rowindex = 0;
 
         foreach ($rows as $row) {
-            // If row does not contains userid we skip it.
+            // If row does not contain userid we skip it.
             if (empty($row->userid)) {
                 continue;
             }
             // Update status.
             $newstatus = get_string('process:started', 'tool_hyperplanningsync');
             self::update_status_text($row->id, $newstatus);
-            if ($progressbar) {
-                if ($progressbar instanceof progress_bar) {
-                    $progressbar->update($rowindex, $rowcount, get_string('process:progress', 'tool_hyperplanningsync'));
-                }
-                if ($progressbar instanceof text_progress_trace) {
-                    $progressbar->output("$rowindex/$rowcount");
-                }
-            }
             // We delegate this to an async task.
             $synctask = new hyperplanning_sync_task();
             $cdata = new stdClass();
@@ -159,6 +138,14 @@ class hyperplanningsync {
                 $synctask->execute();
             }
             $rowindex++;
+            if ($progressbar) {
+                if ($progressbar instanceof progress_bar) {
+                    $progressbar->update($rowindex, $rowcount, get_string('process:progress', 'tool_hyperplanningsync'));
+                }
+                if ($progressbar instanceof text_progress_trace) {
+                    $progressbar->output("$rowindex/$rowcount");
+                }
+            }
         }
 
         // Close the record set.
@@ -174,22 +161,28 @@ class hyperplanningsync {
      * @throws dml_exception
      */
     public static function update_status_text(int $logid, string $newstatus): void {
-        global $DB;
+        global $DB, $USER;
+        $importlog = $DB->get_record('tool_hyperplanningsync_log', array('id' => $logid));
+        $importlog->statustext = self::build_new_status_text($importlog->statustext, $newstatus);
+        $importlog->timemodified = time();
+        $importlog->usermodified = $USER->id;
+        $DB->update_record('tool_hyperplanningsync_log', $importlog);
+    }
 
-        $statustext = $DB->get_field('tool_hyperplanningsync_log', 'statustext', array('id' => $logid));
-
-        if ($statustext === false) {
-            debugging('Missing record for log id ' . $logid, DEBUG_DEVELOPER);
-            return;
+    /**
+     * Build new status text
+     *
+     * @param string $currentstatustext
+     * @param string $newelement
+     * @return string
+     */
+    public static function build_new_status_text(string $currentstatustext, string $newelement): string {
+        if (empty($currentstatustext) || json_decode($currentstatustext) === false) {
+            $currentstatustext = '[]';
         }
-
-        if (empty($statustext)) {
-            $statustext = '';
-        }
-
-        $statustext .= $newstatus . PHP_EOL;
-
-        $DB->set_field('tool_hyperplanningsync_log', 'statustext', $statustext, array('id' => $logid));
+        $jsonobject = json_decode($currentstatustext);
+        $jsonobject[] = (object) ['timestamp' => time(), 'info' => $newelement];
+        return json_encode($jsonobject);
     }
 
     /**
@@ -200,8 +193,12 @@ class hyperplanningsync {
      * @throws dml_exception
      */
     public static function set_status_done(int $logid): void {
-        global $DB;
-        $DB->set_field('tool_hyperplanningsync_log', 'status', self::STATUS_DONE, array('id' => $logid));
+        global $DB, $USER;
+        $importlog = $DB->get_record('tool_hyperplanningsync_log', array('id' => $logid));
+        $importlog->status = self::STATUS_DONE;
+        $importlog->timemodified = time();
+        $importlog->usermodified = $USER->id;
+        $DB->update_record('tool_hyperplanningsync_log', $importlog);
     }
 
     /**
@@ -213,11 +210,9 @@ class hyperplanningsync {
      * @throws dml_exception
      */
     public static function assign_cohort($row, $removecohorts = false): void {
-        global $CFG;
         global $DB;
-        require_once($CFG->dirroot . '/cohort/lib.php');
         // Add to cohort - This will trigger an event to enrol the user too.
-        cohort_add_member($row->cohortid, $row->userid);
+        self::trigger_cohort_add_member($row->cohortid, $row->userid);
         // Update status.
         $newcohort = $DB->get_record('cohort', array('id' => $row->cohortid), 'id, name, idnumber');
         $newstatus = get_string('process:addedcohort', 'tool_hyperplanningsync', $newcohort);
@@ -235,7 +230,7 @@ class hyperplanningsync {
             );
             if ($cohorts = $DB->get_records_sql($sql, $params)) {
                 foreach ($cohorts as $cohort) {
-                    cohort_remove_member($cohort->id, $row->userid);
+                    self::trigger_cohort_remove_member($cohort->id, $row->userid);
                     // Update status.
                     $newstatus = get_string('process:removedcohort', 'tool_hyperplanningsync', $cohort);
                     self::update_status_text($row->id, $newstatus);
@@ -344,9 +339,7 @@ class hyperplanningsync {
      * @return int importid
      */
     public static function do_import(string $content, stdClass $formdata, moodle_url $returnurl): int {
-        global $DB, $USER, $CFG;
-        require_once($CFG->libdir . '/csvlib.class.php');
-
+        global $DB, $USER;
         // Import id.
         $importid = csv_import_reader::get_new_iid('hyperplanningsync');
 
@@ -440,6 +433,8 @@ class hyperplanningsync {
                 'statustext' => '',
                 'createdbyid' => $USER->id,
                 'timecreated' => time(),
+                'timemodified' => time(),
+                'usermodified' => $USER->id,
                 'idfield' => $moodleidfield,
                 'userid' => '',
                 'email' => '',
@@ -465,7 +460,10 @@ class hyperplanningsync {
             }
 
             if (!$userid = $DB->get_field('user', 'id', array($moodleidfield => $newrow[$moodleidfield]))) {
-                $newrow['statustext'] .= get_string('error:nouser', 'tool_hyperplanningsync') . PHP_EOL;
+                $newrow['statustext'] = self::build_new_status_text(
+                    $newrow['statustext'],
+                    get_string('error:nouser', 'tool_hyperplanningsync')
+                );
                 // Missing users are pending not skipped.
                 // So if skipped = true, then this row has been skipped for another reason.
                 $newrow['status'] = self::STATUS_PENDING;
@@ -479,7 +477,10 @@ class hyperplanningsync {
                 WHERE CASE WHEN c.idnumber > '' THEN c.idnumber ELSE c.name END = :idnumber";
 
             if (!$cohortid = $DB->get_field_sql($sql, array('idnumber' => $newrow['cohort']))) {
-                $newrow['statustext'] .= get_string('error:nocohort', 'tool_hyperplanningsync') . PHP_EOL;
+                $newrow['statustext'] = self::build_new_status_text(
+                    $newrow['statustext'],
+                    get_string('error:nocohort', 'tool_hyperplanningsync', $newrow['cohort'])
+                );
                 $newrow['status'] = self::STATUS_SKIPPED;
             } else {
                 $newrow['cohortid'] = $cohortid;
@@ -496,7 +497,10 @@ class hyperplanningsync {
 
             foreach ($groups as $group) {
                 if (!$DB->record_exists_sql($sql, array('groupidnumber' => $group))) {
-                    $newrow['statustext'] .= get_string('error:nogroup', 'tool_hyperplanningsync', $group) . PHP_EOL;
+                    $newrow['statustext'] = self::build_new_status_text(
+                        $newrow['statustext'],
+                        get_string('error:nogroup', 'tool_hyperplanningsync', $group)
+                    );
                     if (empty($formdata->ignoregroups)) {
                         $newrow['status'] = self::STATUS_SKIPPED;
                     }
@@ -512,7 +516,10 @@ class hyperplanningsync {
 
                     // Check if there is a cohort + course + group combination.
                     if (!$DB->record_exists_sql($sql, $params)) {
-                        $newrow['statustext'] .= get_string('error:nogroupincourse', 'tool_hyperplanningsync', $group) . PHP_EOL;
+                        $newrow['statustext'] = self::build_new_status_text(
+                            $newrow['statustext'],
+                            get_string('error:nogroupincourse', 'tool_hyperplanningsync', $group)
+                        );
                         if (empty($formdata->ignoregroups)) {
                             $newrow['status'] = self::STATUS_SKIPPED;
                         }
@@ -539,6 +546,15 @@ class hyperplanningsync {
 
         $csvreader->close();
         $csvreader->cleanup();
+
+        // Create the importid recording in the info table.
+        $DB->insert_record('tool_hyperplanningsync_info', [
+            'importid' => $importid,
+            'importname' => $formdata->import_name,
+            'timecreated' => time(),
+            'usermodified' => $USER->id,
+            'modified' => time(),
+        ]);
 
         // Return the import id.
         return $importid;
@@ -627,9 +643,8 @@ class hyperplanningsync {
      * @param int $userid
      * @return void
      */
-    protected static function trigger_cohort_remove_member(int $cohortid, int $userid): void {
-        global $DB;
-        $DB->delete_records('cohort_members', array('cohortid' => $cohortid, 'userid' => $userid));
+    private static function trigger_cohort_remove_member(int $cohortid, int $userid): void {
+        cohort_remove_member($cohortid, $userid);
     }
 
     /**
@@ -639,16 +654,23 @@ class hyperplanningsync {
      * @param int $userid
      * @return void
      */
-    protected static function trigger_cohort_add_member(int $cohortid, int $userid): void {
+    private static function trigger_cohort_add_member(int $cohortid, int $userid): void {
         global $DB;
-        if ($DB->record_exists('cohort_members', array('cohortid' => $cohortid, 'userid' => $userid))) {
-            // No duplicates!
-            return;
+        if (!$DB->record_exists('cohort_members', array('cohortid' => $cohortid, 'userid' => $userid))) {
+            $record = new stdClass();
+            $record->cohortid = $cohortid;
+            $record->userid = $userid;
+            $record->timeadded = time();
+            $DB->insert_record('cohort_members', $record);
         }
-        $record = new stdClass();
-        $record->cohortid = $cohortid;
-        $record->userid = $userid;
-        $record->timeadded = time();
-        $DB->insert_record('cohort_members', $record);
+        $cohort = $DB->get_record('cohort', array('id' => $cohortid), '*', MUST_EXIST);
+
+        $event = \core\event\cohort_member_added::create(array(
+            'context' => \context::instance_by_id($cohort->contextid),
+            'objectid' => $cohortid,
+            'relateduserid' => $userid,
+        ));
+        $event->add_record_snapshot('cohort', $cohort);
+        $event->trigger();
     }
 }

@@ -13,20 +13,9 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Hyperplanning log table class
- *
- * @package    tool_hyperplanningsync
- * @copyright  2020 CALL Learning
- * @author     Laurent David (laurent@call-learning.fr)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace tool_hyperplanningsync;
 
 use moodle_url;
-use ReflectionProperty;
 use table_sql;
 
 /**
@@ -64,7 +53,8 @@ class log_table extends table_sql {
             'status',
             'statustext',
             'createdbyid',
-            'timecreated'
+            'timecreated',
+            'timemodified',
         );
 
         $headers = array();
@@ -175,11 +165,57 @@ class log_table extends table_sql {
     }
 
     /**
-     * @param $row
-     * @return \lang_string|string
-     * @throws \coding_exception
+     * Status row
+     *
+     * @param object $row
      */
     public function col_status($row) {
         return get_string('status:' . $row->status, 'tool_hyperplanningsync');
+    }
+
+    /**
+     * Status text
+     *
+     * @param object $row
+     * @return \lang_string|string
+     * @throws \coding_exception
+     */
+    public function col_statustext($row) {
+        $allmessages = json_decode($row->statustext);
+        if (empty($allmessages)) {
+            $allmessages = [];
+        }
+        $allmessages = array_map(function($message) {
+            return $message->info;
+        }, $allmessages);
+        return \html_writer::alist($allmessages);
+    }
+
+    /**
+     * Other groups
+     *
+     * @param object $row
+     * @return string
+     */
+    public function col_othergroups($row) {
+        return \html_writer::alist(explode(',', $row->othergroups));
+    }
+    /**
+     * Other groups
+     *
+     * @param object $row
+     * @return string
+     */
+    public function col_groupscsv($row) {
+        return \html_writer::alist(explode(',', $row->groupscsv));
+    }
+
+    /**
+     * Time created
+     * @param object $row
+     * @return string
+     */
+    public function col_timecreated($row) {
+        return userdate_htmltime($row->timecreated);
     }
 }

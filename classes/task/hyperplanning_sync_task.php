@@ -32,13 +32,17 @@ class hyperplanning_sync_task extends adhoc_task {
      * Run task for syncing cohort enrolments.
      */
     public function execute() {
-        global $DB;
-
         $cdata = $this->get_custom_data();
         // Now assign this user to the given cohort.
+        if (!PHPUNIT_TEST) {
+            mtrace("Hyperplanning Sync: assign cohorts for {$cdata->row->userid}");
+        }
         hyperplanningsync::assign_cohort($cdata->row, $cdata->removecohorts);
 
         // And the given group.
+        if (!PHPUNIT_TEST) {
+            mtrace("Hyperplanning Sync: assign groups for {$cdata->row->userid}");
+        }
         hyperplanningsync::assign_group($cdata->row, $cdata->removegroups);
         // Update status.
         $newstatus = get_string('process:done', 'tool_hyperplanningsync');

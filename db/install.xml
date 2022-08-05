@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="admin/tool/hyperplanningsync/db" VERSION="20220802" COMMENT="XMLDB file for Hyperplanning Sync"
+<XMLDB PATH="admin/tool/hyperplanningsync/db" VERSION="20220805" COMMENT="XMLDB file for Hyperplanning Sync"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
@@ -23,11 +23,14 @@
         <FIELD NAME="groupscsv" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="status" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Status (init(0), pending, skipped, processed, processing)"/>
         <FIELD NAME="statustext" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for Hyperplanning Sync"/>
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
         <KEY NAME="createdbyid" TYPE="foreign" FIELDS="createdbyid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="usermodified" TYPE="foreign" FIELDS="usermodified" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="tool_hyperplanningsync_group" COMMENT="Table storing information about group enrolment that have not been able to be done due to the absence of enrolment on a given course. This will be done once the user is enrolled into the course.">
@@ -52,6 +55,21 @@
       <INDEXES>
         <INDEX NAME="user_course_group_ix" UNIQUE="true" FIELDS="userid, courseid, newgroupid"/>
       </INDEXES>
+    </TABLE>
+    <TABLE NAME="tool_hyperplanningsync_info" COMMENT="Import information (user friendly name, date...)">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="importid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="importname" TYPE="char" LENGTH="1033" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="usermodified" TYPE="foreign" FIELDS="usermodified" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="importid_ux" TYPE="unique" FIELDS="importid"/>
+      </KEYS>
     </TABLE>
   </TABLES>
 </XMLDB>

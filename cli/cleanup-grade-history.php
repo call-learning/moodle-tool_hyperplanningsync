@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Run the import through CLI
+ * Remove older grades history in order to accelerate the cohort migration process.
  *
  * @package    tool_hyperplanningsync
  * @copyright  2020 CALL Learning
@@ -24,8 +24,6 @@
  */
 define('CLI_SCRIPT', true);
 require_once(__DIR__ . '/../../../../config.php');
-use tool_hyperplanningsync\hyperplanningsync;
-
 global $CFG;
 
 require_once($CFG->libdir . '/clilib.php');
@@ -35,31 +33,24 @@ ini_set('log_errors', '1');
 
 list($options, $unrecognised) = cli_get_params(
     array(
-        'getimportids' => false,
-        'runimportid' => '',
-        'removecohorts' => false,
-        'removegroups' => false,
+        'gradehistoryyears' => 5,
         'help' => false
     ),
     array(
         'h' => 'help',
-        'i' => 'getimportids',
-        'r' => 'runimportid',
+        'g' => 'gradehistoryyears',
     )
 );
 
 // Checking run.php CLI script usage.
 $help = "
-CLI Script to import an already parsed import from the CLI
+CLI command to remove grade history from more than 5 years ago.
 
 Usage:
-  php import.php  [--getimportids]  [--runimportid]  [--removecohorts]  [--removegroups] [--help]
+  php cleanup-grade-history.php  [--gradehistoryyears=5] [--help]
 
 Options:
---getimportids     Get a list of available import Id
---runimportid      Run a given import
---removecohorts     Remove user from cohort
---removegroups     Remove user from group
+--gradehistorylifetime grade history lifetime
 -h, --help         Print out this help
 
 Example from Moodle root directory:
@@ -70,28 +61,26 @@ if (!empty($options['help'])) {
     echo $help;
     exit(0);
 }
-$unprocessedimports = hyperplanningsync::get_unprocessed_importids();
-$allimportids = array_map(function($imp) {
-    return $imp->importid;
-}, $unprocessedimports);
-
-$targetimport = 0;
-if ($options['getimportids']) {
-    cli_heading(get_string('cli:listofimports', 'tool_hyperplanningsync'));
-    foreach ($unprocessedimports as $imp) {
-        echo $imp->importid . "\t" . userdate($imp->timecreated) . "\n";
+$now = time();
+$gradehistoryyears = $options['gradehistoryyears'] ?? 7;
+$histlifetime = $now - ($gradehistoryyears * YEARSECS);
+$tables = [
+    'grade_outcomes_history',
+    'grade_categories_history',
+    'grade_items_history',
+    'grade_grades_history',
+    'scale_history'
+];
+global $DB;
+foreach ($tables as $table) {
+    $beforecount = $DB->count_records($table);
+    cli_writeln("{$table}  - Number of records before : " . $beforecount);
+    if ($DB->delete_records_select($table, "timemodified < ?", [$histlifetime])) {
+        cli_writeln("    Deleted old grade history records from '$table'");
     }
-    exit(0);
-} else if ($importid = $options['runimportid']) {
-
-    if (in_array($targetimport, $allimportids)) {
-        $allimportids = [$importid];
-    }
-}
-$progressbar = new text_progress_trace();
-
-foreach ($allimportids as $impid) {
-    hyperplanningsync::process($impid, $options['removecohorts'], $options['removegroups'], $progressbar, null, false);
+    $aftercount = $DB->count_records($table);
+    $difference = $beforecount - $aftercount;
+    cli_writeln("{$table}  - Number of records before: {$aftercount} - Difference : {$difference}" );
 }
 cli_heading(get_string('success'));
 exit(0);

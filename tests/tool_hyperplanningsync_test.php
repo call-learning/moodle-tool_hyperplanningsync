@@ -90,6 +90,8 @@ class tool_hyperplanningsync_test extends advanced_testcase {
             'userid' => $this->user->id,
             'cohortid' => $this->cohorts[0]->id,
             'statustext' => '',
+            'timemodified' => time(),
+            'usermodified' => 2
         );
         $id = $DB->insert_record('tool_hyperplanningsync_log', $hyperplanninglog);
         $this->hyperplanninglog = $DB->get_record('tool_hyperplanningsync_log', array('id' => $id));
@@ -236,10 +238,10 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         $this->assertFalse(groups_is_member($group2->id, $this->user->id));
         $hyperplanninglog = $DB->get_record('tool_hyperplanningsync_log', array('id' => $this->hyperplanninglog->id));
         // We should have added the user enrolment into the log.
-        $this->assertStringContainsString('unable to add user to group "A1Gp8.1"', $hyperplanninglog->statustext);
-        $this->assertStringContainsString('unable to add user to group "A1Gp4.1"', $hyperplanninglog->statustext);
-        $this->assertStringNotContainsString('Added user to group "A1Gp8.1"', $hyperplanninglog->statustext);
-        $this->assertStringNotContainsString('Added user to group "A1Gp4.1"', $hyperplanninglog->statustext);
+        $this->assertStringContainsString('unable to add user to group \"A1Gp8.1\"', $hyperplanninglog->statustext);
+        $this->assertStringContainsString('unable to add user to group \"A1Gp4.1\"', $hyperplanninglog->statustext);
+        $this->assertStringNotContainsString('Added user to group \"A1Gp8.1\"', $hyperplanninglog->statustext);
+        $this->assertStringNotContainsString('Added user to group \"A1Gp4.1\"', $hyperplanninglog->statustext);
         // Prevent the user_enrolment_created from being fired.
 
         // Now register user in A1 and enroll it in the course and run adhoc
@@ -250,8 +252,8 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         $this->assertTrue(groups_is_member($group2->id, $this->user->id));
         $hyperplanninglog = $DB->get_record('tool_hyperplanningsync_log', array('id' => $this->hyperplanninglog->id));
         // We should have added the user enrolment into the log.
-        $this->assertStringContainsString('Added user to group "A1Gp8.1"', $hyperplanninglog->statustext);
-        $this->assertStringContainsString('Added user to group "A1Gp4.1"', $hyperplanninglog->statustext);
+        $this->assertStringContainsString('Added user to group \"A1Gp8.1\"', $hyperplanninglog->statustext);
+        $this->assertStringContainsString('Added user to group \"A1Gp4.1\"', $hyperplanninglog->statustext);
     }
 
     /**

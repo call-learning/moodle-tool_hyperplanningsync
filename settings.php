@@ -103,4 +103,13 @@ if ($hassiteconfig) {
 
     $ADMIN->add('hyperplanningsync_menu', $hyperplanningsyncsettings);
 
+    $hyperplanningsyncimport = new admin_externalpage(
+        'tool_hyperplanningsync_progress',
+        get_string('hyperplanningsync:progress', 'tool_hyperplanningsync'),
+        new moodle_url("/$CFG->admin/tool/hyperplanningsync/progress.php"),
+        'tool/hyperplanningsync:manage'
+    );
+    $ADMIN->add('hyperplanningsync_menu', $hyperplanningsyncimport);
+
+
 }

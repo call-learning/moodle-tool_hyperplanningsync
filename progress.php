@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version info
+ * Preview the import for hyperplanningsync admin tool
  *
  * @package    tool_hyperplanningsync
  * @copyright  2020 CALL Learning
@@ -23,8 +23,22 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+use tool_hyperplanningsync\hyperplanningsync;
+require_once('../../../config.php');
+global $CFG;
+global $OUTPUT, $PAGE;
+require_once($CFG->libdir . '/adminlib.php');
 
-$plugin->version = 2022080202; // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires = 2018120310; // Requires this Moodle version.
-$plugin->component = 'tool_hyperplanningsync'; // Full name of the plugin (used for diagnostics).
+$thisurl = new moodle_url('/admin/tool/hyperplanningsync/progress.php');
+
+admin_externalpage_setup('tool_hyperplanningsync_progress', '', [], $thisurl);
+
+$progresselementid = html_writer::random_id();
+$PAGE->requires->js_call_amd('tool_hyperplanningsync/display_progress', 'init', [$progresselementid]);
+
+echo $OUTPUT->header();
+echo $OUTPUT->heading(get_string('hyperplanningsync:progress', 'tool_hyperplanningsync'));
+
+echo html_writer::div('', '', ['id' => $progresselementid]);
+
+echo $OUTPUT->footer();

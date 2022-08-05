@@ -141,6 +141,60 @@ function xmldb_tool_hyperplanningsync_upgrade($oldversion) {
         // Hyperplanningsync savepoint reached.
         upgrade_plugin_savepoint(true, 2022080200, 'tool', 'hyperplanningsync');
     }
+    if ($oldversion < 2022080201) {
+
+        // Define field usermodified to be added to tool_hyperplanningsync_log.
+        $table = new xmldb_table('tool_hyperplanningsync_log');
+        $field = new xmldb_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'statustext');
+
+        // Conditionally launch add field usermodified.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $field = new xmldb_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'usermodified');
+
+        // Conditionally launch add field timemodified.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Hyperplanningsync savepoint reached.
+        upgrade_plugin_savepoint(true, 2022080201, 'tool', 'hyperplanningsync');
+    }
+    if ($oldversion < 2022080202) {
+
+        // Define table tool_hyperplanningsync_info to be created.
+        $table = new xmldb_table('tool_hyperplanningsync_info');
+
+        // Adding fields to table tool_hyperplanningsync_info.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('importid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('importname', XMLDB_TYPE_CHAR, '1033', null, null, null, null);
+        $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table tool_hyperplanningsync_info.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('usermodified', XMLDB_KEY_FOREIGN, ['usermodified'], 'user', ['id']);
+        $table->add_key('importid_ux', XMLDB_KEY_UNIQUE, ['importid']);
+
+        // Conditionally launch create table for tool_hyperplanningsync_info.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define key importid_fk (foreign) to be added to tool_hyperplanningsync_log.
+        $table = new xmldb_table('tool_hyperplanningsync_log');
+        $key = new xmldb_key('importid_fk', XMLDB_KEY_FOREIGN, ['importid'], 'tool_hyperplanningsync_info', ['importid']);
+
+        // Launch add key importid_fk.
+        $dbman->add_key($table, $key);
+
+        // Hyperplanningsync savepoint reached.
+        upgrade_plugin_savepoint(true, 2022080202, 'tool', 'hyperplanningsync');
+    }
 
     return true;
 }
+

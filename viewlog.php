@@ -43,15 +43,30 @@ $pageoptions = array('pagelayout' => 'report');
 $thisurl = new moodle_url('/admin/tool/hyperplanningsync/viewlog.php');
 
 admin_externalpage_setup('tool_hyperplanningsync_viewlog', '', $pageparams, $thisurl, $pageoptions);
-$deleteallbutton = $OUTPUT->single_button(
-    new moodle_url($thisurl, array('delete' => 'all', 'sesskey' => sesskey())),
-    get_string('viewlog:deleteall', 'tool_hyperplanningsync')
+
+$progressbutton = new single_button(
+    new moodle_url(new moodle_url('/admin/tool/hyperplanningsync/progress.php')),
+    get_string('hyperplanningsync:progress', 'tool_hyperplanningsync'),
+    true,
 );
-$deletelast = $OUTPUT->single_button(
+$viewprogress = $OUTPUT->render($progressbutton);
+
+$deletelastbutton = new single_button(
     new moodle_url($thisurl, array('delete' => 'partial', 'sesskey' => sesskey())),
-    get_string('viewlog:deletepartial', 'tool_hyperplanningsync')
+    get_string('viewlog:deletepartial', 'tool_hyperplanningsync'),
 );
-$extrabuttons = $OUTPUT->box($deleteallbutton . $deletelast);
+$deletelastbutton->class = $deletelastbutton->class . ' btn-danger';
+$deletelast = $OUTPUT->render($deletelastbutton);
+
+
+$deleteallbutton = new single_button(
+    new moodle_url($thisurl, array('delete' => 'all', 'sesskey' => sesskey())),
+    get_string('viewlog:deleteall', 'tool_hyperplanningsync'),
+);
+$deleteallbutton->class = $deleteallbutton->class . ' btn-danger';
+$deleteallbutton = $OUTPUT->render($deleteallbutton);
+
+$extrabuttons = $OUTPUT->box( $viewprogress . $deletelast . $deleteallbutton);
 
 $PAGE->set_button($extrabuttons . $PAGE->button);
 echo $OUTPUT->header();

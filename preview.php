@@ -27,9 +27,10 @@ use tool_hyperplanningsync\hyperplanningsync;
 
 define('NO_OUTPUT_BUFFERING', true);
 require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
-global $CFG, $PAGE, $OUTPUT;
+global $CFG, $PAGE, $OUTPUT, $DB;
 require_once($CFG->libdir . '/adminlib.php');
 require_once(dirname(__FILE__) . '/preview_form.php');
+$PAGE->set_cacheable(false);    // Progress bar is used here.
 
 $pageparams = array();
 
@@ -47,7 +48,6 @@ $mform = new preview_form();
 $formdata = $mform->get_data();
 
 if ($formdata = $mform->get_data()) {
-    $PAGE->set_cacheable(false);    // Progress bar is used here.
     echo $OUTPUT->header();
     echo $OUTPUT->heading(get_string('preview:heading:process', 'tool_hyperplanningsync'));
     // Just in case.
@@ -55,7 +55,7 @@ if ($formdata = $mform->get_data()) {
     $progressbar = new progress_bar();
     $progressbar->create();
 
-    // Lets do this.
+    // Let's do this.
     hyperplanningsync::process($formdata->importid, $formdata->removecohorts, $formdata->removegroups,
         $progressbar);
 
@@ -63,15 +63,26 @@ if ($formdata = $mform->get_data()) {
     echo $OUTPUT->continue_button($viewlogurl, get_string('continue'), 'get');
     echo $OUTPUT->footer();
     exit;
+} else if ($mform->is_cancelled()) {
+    // Cleanup.
+    if (!empty($pageparams['importid'])) {
+        global $DB;
+        $DB->delete_records_select('tool_hyperplanningsync_log', 'importid = :importid',
+            array('importid' => $pageparams['importid']));
+    }
+    $indexurl = new moodle_url('/admin/tool/hyperplanningsync/index.php');
+    redirect($indexurl);
 }
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('preview:heading', 'tool_hyperplanningsync'));
 
 $mform->set_data($pageparams);
-$mform->display();
+echo $OUTPUT->box($mform->render());
 
-echo $OUTPUT->heading(get_string('preview:results', 'tool_hyperplanningsync', $pageparams['importid']), 3);
+$importname = $DB->get_field('tool_hyperplanningsync_info', 'importname', ['importid' => $pageparams['importid']]);
+
+echo $OUTPUT->heading(get_string('preview:results', 'tool_hyperplanningsync', $importname ?? ''), 3);
 
 $renderer = $PAGE->get_renderer('tool_hyperplanningsync');
 

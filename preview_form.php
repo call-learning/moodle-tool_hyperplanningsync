@@ -54,7 +54,7 @@ class preview_form extends moodleform {
         $mform->addElement('advcheckbox', 'removegroups', get_string('process:removegroups', 'tool_hyperplanningsync'));
         $mform->setType('removegroups', PARAM_BOOL);
 
-        $this->add_action_buttons(false, get_string('process:btn', 'tool_hyperplanningsync'));
+        $this->add_action_buttons(true, get_string('process:btn', 'tool_hyperplanningsync'));
     }
 
 }

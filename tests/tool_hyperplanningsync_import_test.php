@@ -116,11 +116,11 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
                 'email' => 'etudiantnonexisting.etudiant148@email.com')
         ));
         // Check that there is an error for the user who has the wrong group ID.
-        $this->assertContains('Group not found for this idnumber : A4 grHp 35', $DB->get_field(
+        $this->assertContains('Group not found for this id : A4 grHp 35', $DB->get_field(
             'tool_hyperplanningsync_log', 'statustext', array(
                 'email' => 'etudiant117.etudiant117@email.com')
         ));
-        $this->assertContains('Group not found for this idnumber : A2 sans gr8.1', $DB->get_field(
+        $this->assertContains('Group not found for this id : A2 sans gr8.1', $DB->get_field(
             'tool_hyperplanningsync_log', 'statustext', array(
                 'email' => 'etudiant26.etudiant26@email.com')
         ));
@@ -149,6 +149,7 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
      */
     protected function get_default_upload_formdata() {
         $formdata = new stdClass();
+        $formdata->import_name = "Random name";
         $formdata->upload_delimiter = 'comma';
         $formdata->upload_encoding = 'UTF-8';
         $formdata->moodle_idfield = get_config('tool_hyperplanningsync', 'moodle_idfield');
