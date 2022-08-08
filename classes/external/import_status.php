@@ -121,11 +121,11 @@ class import_status extends \external_api {
             $fullstatus->totalcount = array_reduce($fullstatus->statuscounts, function($acc, $status) {
                 return $acc + $status->count;
             }, 0);
-
+            $status = json_decode($lateststatustext[$importid]->statustext);
             $fullstatus->lateststatus = (object) [
                 'userfullname' => $lateststatustext[$importid]->email,
-                'status' => empty($lateststatustext[$importid]->statustext) ? [] :
-                    json_decode($lateststatustext[$importid]->statustext),
+                'status' => empty($status) ? [] : $status
+                ,
             ];
             $importidstats[$importid] = $fullstatus;
         }
