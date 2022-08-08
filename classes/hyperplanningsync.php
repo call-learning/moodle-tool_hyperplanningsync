@@ -673,4 +673,20 @@ class hyperplanningsync {
         $event->add_record_snapshot('cohort', $cohort);
         $event->trigger();
     }
+
+    /**
+     * Return all status with associated language strings
+     *
+     * @return array
+     */
+    public static function get_status_names(): array {
+        $allstatus = [
+            self::STATUS_DONE, self::STATUS_INITED, self::STATUS_PENDING, self::STATUS_SKIPPED
+        ];
+        $statusname = [];
+        foreach ($allstatus as $status) {
+            $statusname[$status] = get_string('status:' . $status, 'tool_hyperplanningsync');
+        }
+        return $statusname;
+    }
 }

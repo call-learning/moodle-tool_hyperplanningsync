@@ -34,6 +34,7 @@ $pageparams['importid'] = optional_param('importid', '', PARAM_ALPHANUM);
 $pageparams['idvalue'] = optional_param('idvalue', '', PARAM_TEXT);
 $pageparams['cohort'] = optional_param('cohort', '', PARAM_TEXT);
 $pageparams['pagenum'] = optional_param('pagenum', 0, PARAM_INT);
+$pageparams['status'] = optional_param('status', -1, PARAM_INT);
 
 $delete = optional_param('delete', '', PARAM_ALPHA);
 $confirm = optional_param('confirm', false, PARAM_BOOL);

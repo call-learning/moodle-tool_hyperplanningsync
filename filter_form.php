@@ -55,6 +55,13 @@ class filter_form extends moodleform {
         $mform->addElement('text', 'cohort', get_string('report:cohort', 'tool_hyperplanningsync'));
         $mform->setType('cohort', PARAM_TEXT);
 
+        $mform->addElement('select', 'status',
+            get_string('report:status', 'tool_hyperplanningsync'),
+            [-1 => ''] + \tool_hyperplanningsync\hyperplanningsync::get_status_names(),
+            -1
+        );
+        $mform->setType('status', PARAM_INT);
+
         $this->add_action_buttons(false, get_string('filter:btn', 'tool_hyperplanningsync'));
     }
 

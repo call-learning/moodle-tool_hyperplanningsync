@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 namespace tool_hyperplanningsync;
 
+use core_user;
+use html_writer;
 use moodle_url;
 use table_sql;
 
@@ -110,6 +112,10 @@ class log_table extends table_sql {
             $wheres[] = $DB->sql_like('l.cohort', ':cohort', false);
         }
 
+        if (isset($filters['status']) && $filters['status'] != -1) {
+            $params['status'] = $filters['status'];
+            $wheres[] = 'l.status = :status';
+        }
         $where = '1=1';
         if (!empty($wheres)) {
             $where = $where . ' AND ' . implode(' AND ', $wheres);
@@ -129,11 +135,7 @@ class log_table extends table_sql {
                 LEFT JOIN {user} u ON u.id = l.userid
                 LEFT JOIN {user} createdby ON createdby.id = l.createdbyid
                 LEFT JOIN {cohort} c ON c.id = l.cohortid";
-
-        // Check if any additional filtering is required.
-        [$additionalwhere, $additionalparams] = $this->get_sql_where();
-
-        $this->set_sql($fields, $from, $where . ' AND (' . $additionalwhere . ')', array_merge($params, $additionalparams));
+        $this->set_sql($fields, $from, $where, $params);
     }
 
     /**
@@ -151,11 +153,11 @@ class log_table extends table_sql {
             static $i = 0;
             $i++;
 
-            if (!$this->get_initial_first()) {
+            if (!empty($this->get_initial_first())) {
                 $conditions[] = $DB->sql_like('u.firstname', ':ifirstc' . $i, false, false);
                 $params['ifirstc' . $i] = $this->get_initial_first() . '%';
             }
-            if (!$this->get_initial_last()) {
+            if (!empty($this->get_initial_last())) {
                 $conditions[] = $DB->sql_like('u.lastname', ':ilastc' . $i, false, false);
                 $params['ilastc' . $i] = $this->get_initial_last() . '%';
             }
@@ -163,6 +165,19 @@ class log_table extends table_sql {
 
         return array(implode(" AND ", $conditions), $params);
     }
+
+    /**
+     * Fullname or email
+     *
+     * @param object $row
+     */
+    public function col_fullname($row) {
+        if (empty($row->userid)) {
+            return $row->email;
+        }
+        return parent::col_fullname($row);
+    }
+
 
     /**
      * Status row
@@ -217,5 +232,40 @@ class log_table extends table_sql {
      */
     public function col_timecreated($row) {
         return userdate_htmltime($row->timecreated);
+    }
+
+    /**
+     * Time created
+     * @param object $row
+     * @return string
+     */
+    public function col_timemodified($row) {
+        return userdate_htmltime($row->timemodified);
+    }
+
+    /**
+     * Time created
+     * @param object $row
+     * @return string
+     */
+    public function col_createdbyid($row) {
+        static $users = [];
+
+        global $COURSE;
+        $userid = $row->createdbyid;
+        if (empty($users[$userid])) {
+            $users[$userid] = core_user::get_user($userid);
+        }
+        $name = fullname($users[$userid], has_capability('moodle/site:viewfullnames', $this->get_context()));
+        if ($this->download) {
+            return $name;
+        }
+        if ($COURSE->id == SITEID) {
+            $profileurl = new moodle_url('/user/profile.php', array('id' => $userid));
+        } else {
+            $profileurl = new moodle_url('/user/view.php',
+                array('id' => $userid, 'course' => $COURSE->id));
+        }
+        return html_writer::link($profileurl, $name);
     }
 }

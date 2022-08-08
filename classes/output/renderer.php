@@ -46,7 +46,7 @@ class renderer extends plugin_renderer_base {
      * @return string - html to output
      */
     public function display_log(array $pageparams, moodle_url $url): string {
-        $table = new log_table(html_writer::random_id('hyperplanning-log'), $pageparams, $url);
+        $table = new log_table('hyperplanning-log', $pageparams, $url);
         ob_start();
         $table->out($table->pagesize, true);
         $o = ob_get_contents();
