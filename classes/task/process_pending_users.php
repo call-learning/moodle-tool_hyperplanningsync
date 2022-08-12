@@ -18,43 +18,35 @@ namespace tool_hyperplanningsync\task;
 
 use coding_exception;
 use core\task\adhoc_task;
+use core\task\scheduled_task;
 use dml_exception;
 use moodle_exception;
 use tool_hyperplanningsync\hyperplanningsync;
 
 /**
- * Import process for new users
+ * Process pending users.
  *
  * @package    tool_hyperplanningsync
  * @copyright  2020 CALL Learning
  * @author     Laurent David (laurent@call-learning.fr)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
  */
-class process_import_for_new_user extends adhoc_task {
+class process_pending_users extends scheduled_task {
     /**
-     * Process row for this user
+     * Process one for this user
      *
      * @return bool|void
      * @throws dml_exception
      */
     public function execute() {
         global $DB;
-        $data = $this->get_custom_data();
         // Look for any pending records for this user that haven't been skipped.
-        $sql = "SELECT l.*
+        $sql = "SELECT l.*, u.id AS relateduserid
                 FROM {tool_hyperplanningsync_log} l
-                JOIN {user} u ON u.id = :relateduserid
-                    AND ((l.idfield = :email AND l.email = u.email)
-                        OR (l.idfield = :idnumber AND l.idnumber = u.idnumber)
-                        OR (l.idfield = :username AND l.username = u.username)
-                    )
+                LEFT JOIN {user} u ON u.email = l.email
                 WHERE l.status = :statuspending";
 
         $params = array(
-            'email' => 'email',
-            'idnumber' => 'idnumber',
-            'username' => 'username',
-            'relateduserid' => $data->relateduserid,
             'statuspending' => hyperplanningsync::STATUS_PENDING
         );
 
@@ -64,11 +56,22 @@ class process_import_for_new_user extends adhoc_task {
 
         try {
             foreach ($imports as $import) {
-                hyperplanningsync::process_new_user_import($import, $data->relateduserid);
+                if (!empty($import->relateduserid)) {
+                    hyperplanningsync::process_new_user_import($import, $import->relateduserid);
+                }
             }
         } catch (moodle_exception $e) {
             // We should just fail but not prevent other events from being processed, so we catch any exception.
             debugging('user_created_process_import:user_created:' . $e->getMessage() . '-' . $e->getTraceAsString());
         }
+    }
+
+    /**
+     * Get name
+     *
+     * @return \lang_string|string
+     */
+    public function get_name() {
+        return get_string('scheduled:processpendingusers', 'tool_hyperplanningsync');
     }
 }

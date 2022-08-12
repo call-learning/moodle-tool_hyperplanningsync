@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Upload form for hyperplanningsync admin tool
- *
- * @package    tool_hyperplanningsync
- * @copyright  2020 CALL Learning
- * @author     Russell England <Russell.England@gmail.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 use tool_hyperplanningsync\hyperplanningsync;
 
 defined('MOODLE_INTERNAL') || die();

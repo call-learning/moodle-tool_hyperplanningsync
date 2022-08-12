@@ -103,6 +103,7 @@ $string['settings:group_transform_replacement'] = 'Regexp replacement for group 
 $string['settings:group_transform_replacement_config'] = 'Regexp replacement for group name,
  if any (leave it empty if you don\'t want any)';
 $string['settings:sync_new_users_enabled'] = 'Synchronise new users at creation';
+$string['scheduled:processpendingusers'] = 'Process pending users';
 $string['upload:importnname'] = 'Import name';
 $string['upload:btn'] = 'Upload';
 $string['upload:cohort'] = 'Cohort field name';

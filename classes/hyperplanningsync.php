@@ -689,4 +689,35 @@ class hyperplanningsync {
         }
         return $statusname;
     }
+
+    /**
+     * New import
+     *
+     * For a new user, import and change the status.
+     *
+     * @param object $import
+     * @param int $relateduseid
+     * @return void
+     */
+    public static function process_new_user_import($import, $relateduseid) {
+        global $USER, $DB;
+        // Set the userid.
+        $import->userid = $relateduseid;
+        $import->status = static::STATUS_INITED;
+        $import->timemodified = time();
+        $import->usermodified = $USER->id;
+        $DB->update_record('tool_hyperplanningsync_log', $import);
+        // New users won't exist in cohorts or course groups so it is okay for these to be false.
+        static::process($import->importid, false,
+            false, null, $import->id, false); // Immediate action (deferred = false).
+        // Set pending to false and update userid and update status.
+        // Refresh import log.
+        $DB->get_record('tool_hyperplanningsync_log', ['id' => $import->id]);
+        $import->statustext = static::build_new_status_text($import->statustext,
+            get_string('process:usercreated', 'tool_hyperplanningsync'));
+        $import->timemodified = time();
+        $import->usermodified = $USER->id;
+        $import->status = static::STATUS_DONE;
+        $DB->update_record('tool_hyperplanningsync_log', $import);
+    }
 }

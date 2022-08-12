@@ -13,9 +13,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
- * Plugin version info
+ * Definition of scheduled tasks.
  *
  * @package    tool_hyperplanningsync
  * @copyright  2020 CALL Learning
@@ -25,6 +24,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2022080203; // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires = 2018120310; // Requires this Moodle version.
-$plugin->component = 'tool_hyperplanningsync'; // Full name of the plugin (used for diagnostics).
+$tasks = array(
+    array(
+        'classname' => 'tool_hyperplanningsync\task\process_pending_users',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '1',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*'
+    ),
+);
