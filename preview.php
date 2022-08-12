@@ -24,6 +24,7 @@
  */
 
 use tool_hyperplanningsync\hyperplanningsync;
+use tool_hyperplanningsync\log_table;
 
 define('NO_OUTPUT_BUFFERING', true);
 require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
@@ -74,6 +75,8 @@ if ($formdata = $mform->get_data()) {
     redirect($indexurl);
 }
 
+$table = new log_table('hyperplanning-log', $pageparams, $thisurl);
+
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('preview:heading', 'tool_hyperplanningsync'));
 
@@ -86,5 +89,5 @@ echo $OUTPUT->heading(get_string('preview:results', 'tool_hyperplanningsync', $i
 
 $renderer = $PAGE->get_renderer('tool_hyperplanningsync');
 
-echo $renderer->display_log($pageparams, $thisurl);
+echo $renderer->display_log($table);
 echo $OUTPUT->footer();

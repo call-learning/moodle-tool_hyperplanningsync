@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_hyperplanningsync\log_table;
+
 require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
 global $CFG, $OUTPUT, $DB, $PAGE;
 require_once($CFG->libdir . '/adminlib.php');
@@ -70,6 +72,11 @@ $deleteallbutton = $OUTPUT->render($deleteallbutton);
 $extrabuttons = $OUTPUT->box( $viewprogress . $deletelast . $deleteallbutton);
 
 $PAGE->set_button($extrabuttons . $PAGE->button);
+
+$table = new log_table('hyperplanning-log', $pageparams, $thisurl);
+if ($table->is_downloading()) {
+    $table->download();
+}
 echo $OUTPUT->header();
 
 echo $OUTPUT->heading(get_string('viewlog:heading', 'tool_hyperplanningsync'));
@@ -118,6 +125,6 @@ echo $OUTPUT->heading(get_string('viewlog:results', 'tool_hyperplanningsync'), 3
 
 $renderer = $PAGE->get_renderer('tool_hyperplanningsync');
 
-echo $renderer->display_log($pageparams, $thisurl);
+echo $renderer->display_log($table);
 
 echo $OUTPUT->footer();

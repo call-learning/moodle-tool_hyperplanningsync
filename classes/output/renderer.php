@@ -41,12 +41,10 @@ class renderer extends plugin_renderer_base {
     /**
      * Display the log
      *
-     * @param array $pageparams url parameters and filters
-     * @param moodle_url $url
+     * @param log_table $table
      * @return string - html to output
      */
-    public function display_log(array $pageparams, moodle_url $url): string {
-        $table = new log_table('hyperplanning-log', $pageparams, $url);
+    public function display_log(log_table $table): string {
         ob_start();
         $table->out($table->pagesize, true);
         $o = ob_get_contents();

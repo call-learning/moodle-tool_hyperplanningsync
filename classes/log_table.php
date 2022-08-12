@@ -78,6 +78,8 @@ class log_table extends table_sql {
         $this->pagesize = self::TOOL_HYPERPLANNINGSYNC_PERPAGE;
         $this->set_sql_from_filters($filterparams);
         $this->useridfield = 'userid';
+        $this->downloadable = true;
+        $this->is_downloading(optional_param('download', 0, PARAM_ALPHA), 'viewlog');
     }
 
     /**
@@ -178,7 +180,6 @@ class log_table extends table_sql {
         return parent::col_fullname($row);
     }
 
-
     /**
      * Status row
      *
@@ -203,6 +204,9 @@ class log_table extends table_sql {
         $allmessages = array_map(function($message) {
             return $message->info;
         }, $allmessages);
+        if ($this->is_downloading()) {
+            return join("\n", $allmessages);
+        }
         return \html_writer::alist($allmessages);
     }
 
@@ -213,8 +217,13 @@ class log_table extends table_sql {
      * @return string
      */
     public function col_othergroups($row) {
-        return \html_writer::alist(explode(',', $row->othergroups));
+        $groups = explode(',', $row->othergroups);
+        if ($this->is_downloading()) {
+            return join("\n", $groups);
+        }
+        return \html_writer::alist($groups);
     }
+
     /**
      * Other groups
      *
@@ -222,29 +231,42 @@ class log_table extends table_sql {
      * @return string
      */
     public function col_groupscsv($row) {
-        return \html_writer::alist(explode(',', $row->groupscsv));
+        $groups = explode(',', $row->groupscsv);
+        if ($this->is_downloading()) {
+            return join("\n", $groups);
+        }
+        return \html_writer::alist($groups);
     }
 
     /**
      * Time created
+     *
      * @param object $row
      * @return string
      */
     public function col_timecreated($row) {
+        if ($this->is_downloading()) {
+            return userdate($row->timecreated);
+        }
         return userdate_htmltime($row->timecreated);
     }
 
     /**
      * Time created
+     *
      * @param object $row
      * @return string
      */
     public function col_timemodified($row) {
+        if ($this->is_downloading()) {
+            return userdate($row->timemodified);
+        }
         return userdate_htmltime($row->timemodified);
     }
 
     /**
      * Time created
+     *
      * @param object $row
      * @return string
      */
@@ -266,6 +288,25 @@ class log_table extends table_sql {
             $profileurl = new moodle_url('/user/view.php',
                 array('id' => $userid, 'course' => $COURSE->id));
         }
-        return html_writer::link($profileurl, $name);
+        if ($this->is_downloading()) {
+            return $name;
+        } else {
+            return html_writer::link($profileurl, $name);
+        }
+    }
+
+    /**
+     * Download csv
+     *
+     * @return void
+     */
+    public function download() {
+        $exportclass = $this->export_class_instance();
+        $this->setup();
+        $this->pagesize = 0;
+        $this->query_db(0);
+        $this->build_table();
+        $exportclass->finish_table();
+        $exportclass->finish_document();
     }
 }
