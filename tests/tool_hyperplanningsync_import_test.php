@@ -22,6 +22,7 @@
  * @author     Laurent David <laurent@call-learning.fr>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace tool_hyperplanningsync;
 
 use advanced_testcase;
@@ -69,18 +70,18 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
      * Setup
      *
      */
-    public function setUp() {
+    public function setUp(): void {
         parent::setUp();
         $this->resetAfterTest();
         // Setup custom profile fields.
-        $dataset = $this->createCsvDataSet(array(
+        $dataset = $this->dataset_from_files([
                 'cohort' => __DIR__ . '/fixtures/cohort.csv',
                 'course' => __DIR__ . '/fixtures/course.csv',
                 'groups' => __DIR__ . '/fixtures/groups.csv',
                 'course_categories' => __DIR__ . '/fixtures/course_categories.csv'
-            )
+            ]
         );
-        $this->loadDataSet($dataset);
+        $dataset->to_database();
 
         for ($j = 1; $j <= self::MAX_USERS; $j++) {
             $user = $this->getDataGenerator()->create_user([
@@ -106,23 +107,19 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
         $this->import_precheck('sample_export_hyperplanning_simple.csv');
 
         // Check that there was at least an error for the user with no cohort/groups.
-        $this->assertContains('Cohort not found', $DB->get_field(
-            'tool_hyperplanningsync_log', 'statustext', array(
-                'email' => 'etudiantnonexisting.etudiant@email.com')
+        $this->assertStringContainsString('Cohort not found', $DB->get_field(
+            'tool_hyperplanningsync_log', 'statustext', ['email' => 'etudiantnonexisting.etudiant@email.com']
         ));
         // Check that there was at least an error for the user that does not exist.
-        $this->assertContains('User not found', $DB->get_field(
-            'tool_hyperplanningsync_log', 'statustext', array(
-                'email' => 'etudiantnonexisting.etudiant148@email.com')
+        $this->assertStringContainsString('User not found', $DB->get_field(
+            'tool_hyperplanningsync_log', 'statustext', ['email' => 'etudiantnonexisting.etudiant148@email.com']
         ));
         // Check that there is an error for the user who has the wrong group ID.
-        $this->assertContains('Group not found for this id : A4 grHp 35', $DB->get_field(
-            'tool_hyperplanningsync_log', 'statustext', array(
-                'email' => 'etudiant117.etudiant117@email.com')
+        $this->assertStringContainsString('Group not found for this id : A4 grHp 35', $DB->get_field(
+            'tool_hyperplanningsync_log', 'statustext', ['email' => 'etudiant117.etudiant117@email.com']
         ));
-        $this->assertContains('Group not found for this id : A2 sans gr8.1', $DB->get_field(
-            'tool_hyperplanningsync_log', 'statustext', array(
-                'email' => 'etudiant26.etudiant26@email.com')
+        $this->assertStringContainsString('Group not found for this id : A2 sans gr8.1', $DB->get_field(
+            'tool_hyperplanningsync_log', 'statustext', ['email' => 'etudiant26.etudiant26@email.com']
         ));
     }
 

@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$tasks = array(
-    array(
+$tasks = [
+    [
         'classname' => 'tool_hyperplanningsync\task\process_pending_users',
         'blocking' => 0,
         'minute' => '*',
@@ -33,5 +33,5 @@ $tasks = array(
         'day' => '*',
         'dayofweek' => '*',
         'month' => '*'
-    ),
-);
+    ]
+];

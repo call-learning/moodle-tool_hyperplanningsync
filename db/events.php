@@ -25,13 +25,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$observers = array(
-    array(
+$observers = [
+    [
         'eventname' => '\core\event\user_created',
         'callback' => '\tool_hyperplanningsync\observer::user_created',
-    ),
-    array(
+    ],
+    [
         'eventname' => '\core\event\user_enrolment_created',
         'callback' => '\tool_hyperplanningsync\observer::user_enrolled',
-    ),
-);
+    ],
+];
