@@ -247,9 +247,6 @@ class hyperplanningsync {
      */
     public static function assign_group(object $row, ?bool $removegroups = false): void {
         global $DB;
-        if (empty($row->groupscsv)) {
-            return;
-        }
         // Get the groupid numbers we want to sign up to.
         $groupidnumbers = explode(',', $row->groupscsv);
 
@@ -299,7 +296,9 @@ class hyperplanningsync {
                 }
             }
         }
-
+        if (empty($row->groupscsv)) {
+            return;
+        }
         // Add to the new groups.
         foreach ($newgroups as $newgroup) {
 
