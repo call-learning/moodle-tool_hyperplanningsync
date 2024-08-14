@@ -33,12 +33,12 @@ require_once($CFG->libdir . '/adminlib.php');
 require_once(dirname(__FILE__) . '/preview_form.php');
 $PAGE->set_cacheable(false);    // Progress bar is used here.
 
-$pageparams = array();
+$pageparams = [];
 
 $pageparams['importid'] = required_param('importid', PARAM_INT);
 $pageparams['pagenum'] = optional_param('pagenum', 0, PARAM_INT);
 
-$pageoptions = array('pagelayout' => 'report');
+$pageoptions = ['pagelayout' => 'report'];
 
 $thisurl = new moodle_url('/admin/tool/hyperplanningsync/preview.php');
 
@@ -69,7 +69,7 @@ if ($formdata = $mform->get_data()) {
     if (!empty($pageparams['importid'])) {
         global $DB;
         $DB->delete_records_select('tool_hyperplanningsync_log', 'importid = :importid',
-            array('importid' => $pageparams['importid']));
+            ['importid' => $pageparams['importid']]);
     }
     $indexurl = new moodle_url('/admin/tool/hyperplanningsync/index.php');
     redirect($indexurl);

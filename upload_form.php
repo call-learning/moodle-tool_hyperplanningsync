@@ -65,11 +65,11 @@ class upload_form extends moodleform {
 
         $mform->addElement('header', 'field_heading', get_string('upload:heading:field', 'tool_hyperplanningsync'));
 
-        $options = array(
+        $options = [
             'email' => get_string('email'),
             'idnumber' => get_string('idnumber'),
             'username' => get_string('username'),
-        );
+        ];
         $mform->addElement('select', 'moodle_idfield', get_string('upload:moodle_idfield', 'tool_hyperplanningsync'), $options);
         $mform->setType('moodle_idfield', PARAM_TEXT);
         $mform->setDefault('moodle_idfield', get_config('tool_hyperplanningsync', 'moodle_idfield'));

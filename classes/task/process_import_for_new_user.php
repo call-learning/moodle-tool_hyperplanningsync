@@ -50,13 +50,13 @@ class process_import_for_new_user extends adhoc_task {
                     )
                 WHERE l.status = :statuspending";
 
-        $params = array(
+        $params = [
             'email' => 'email',
             'idnumber' => 'idnumber',
             'username' => 'username',
             'relateduserid' => $data->relateduserid,
-            'statuspending' => hyperplanningsync::STATUS_PENDING
-        );
+            'statuspending' => hyperplanningsync::STATUS_PENDING,
+        ];
 
         if (!$imports = $DB->get_records_sql($sql, $params)) {
             return true;

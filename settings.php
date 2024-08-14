@@ -54,11 +54,11 @@ if ($hassiteconfig) {
         get_string('hyperplanningsync:settings', 'tool_hyperplanningsync'),
         'tool/hyperplanningsync:manage');
 
-    $options = array(
+    $options = [
         'email' => get_string('email'),
         'idnumber' => get_string('idnumber'),
         'username' => get_string('username'),
-    );
+    ];
 
     $hyperplanningsyncsettings->add(new admin_setting_configselect(
         'tool_hyperplanningsync/moodle_idfield', // Config name.

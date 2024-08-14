@@ -31,9 +31,9 @@ require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/csvlib.class.php');
 require_once(dirname(__FILE__) . '/upload_form.php');
 
-$pageoptions = array('pagelayout' => 'report');
+$pageoptions = ['pagelayout' => 'report'];
 
-$pageparams = array();
+$pageparams = [];
 
 admin_externalpage_setup('tool_hyperplanningsync_import', '', $pageparams, '', $pageoptions);
 require_capability('tool/hyperplanningsync:manage', context_system::instance());
@@ -52,7 +52,7 @@ if ($formdata = $mform->get_data()) {
     if ($importid = hyperplanningsync::do_import($content, $formdata, $returnurl)) {
 
         // Continue to form2.
-        $previewurl = new moodle_url('/admin/tool/hyperplanningsync/preview.php', array('importid' => $importid));
+        $previewurl = new moodle_url('/admin/tool/hyperplanningsync/preview.php', ['importid' => $importid]);
 
         redirect($previewurl);
 

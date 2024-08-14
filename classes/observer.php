@@ -62,22 +62,22 @@ class observer {
         global $DB;
         try {
             $allgroups =
-                $DB->get_records('tool_hyperplanningsync_group', array('userid' => $event->relateduserid, 'courseid' =>
-                    $event->courseid));
+                $DB->get_records('tool_hyperplanningsync_group', ['userid' => $event->relateduserid, 'courseid' =>
+                    $event->courseid, ]);
             foreach ($allgroups as $groupdef) {
                 // Update status.
                 $result = groups_add_member($groupdef->newgroupid, $groupdef->userid);
                 if ($result) {
                     // Update status for this import log.
                     $info = (object) [
-                        'groupname' => $DB->get_field('groups', 'name', array('id' => $groupdef->newgroupid)),
+                        'groupname' => $DB->get_field('groups', 'name', ['id' => $groupdef->newgroupid]),
                         'groupid' => $groupdef->newgroupid,
-                        'coursename' => $DB->get_field('course', 'fullname', array('id' => $event->courseid)),
-                        'courseid' => $event->courseid
+                        'coursename' => $DB->get_field('course', 'fullname', ['id' => $event->courseid]),
+                        'courseid' => $event->courseid,
                     ];
                     $newstatus = get_string('process:addedgroup', 'tool_hyperplanningsync', $info);
                     hyperplanningsync::update_status_text($groupdef->logid, $newstatus);
-                    $DB->delete_records('tool_hyperplanningsync_group', array('id' => $groupdef->id));
+                    $DB->delete_records('tool_hyperplanningsync_group', ['id' => $groupdef->id]);
                 }
             }
         } catch (moodle_exception $e) {

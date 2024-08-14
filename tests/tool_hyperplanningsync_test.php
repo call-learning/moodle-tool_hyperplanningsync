@@ -85,7 +85,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
             $this->groups[$groupname] =
                 $generator->create_group(['courseid' => $this->course->id, 'idnumber' => $groupname, 'name' => $groupname]);
         }
-        $hyperplanninglog = array(
+        $hyperplanninglog = [
             'importid' => 1591286339,
             'idfield' => 'email',
             'lineid' => 2,
@@ -104,10 +104,10 @@ class tool_hyperplanningsync_test extends advanced_testcase {
             'cohortid' => $this->cohorts[0]->id,
             'statustext' => '',
             'timemodified' => time(),
-            'usermodified' => 2
-        );
+            'usermodified' => 2,
+        ];
         $id = $DB->insert_record('tool_hyperplanningsync_log', $hyperplanninglog);
-        $this->hyperplanninglog = $DB->get_record('tool_hyperplanningsync_log', array('id' => $id));
+        $this->hyperplanninglog = $DB->get_record('tool_hyperplanningsync_log', ['id' => $id]);
     }
 
     /**
@@ -135,7 +135,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         $this->resetAfterTest();
 
         $simpletransform = hyperplanningsync::clean_groups((array) $this->hyperplanninglog, '', '');
-        $this->assertEquals(array(
+        $this->assertEquals([
             0 => 'A1 gr8.1',
             1 => 'A1 gr4.1',
             2 => 'A1 sans gr8.2',
@@ -145,11 +145,11 @@ class tool_hyperplanningsync_test extends advanced_testcase {
             6 => 'A1 sans gr8.6',
             7 => 'A1 sans gr8.7',
             8 => 'A1 sans gr8.8',
-        ), $simpletransform);
+        ], $simpletransform);
         $patterntransforms =
             hyperplanningsync::clean_groups((array) $this->hyperplanninglog, self::GROUP_PATTERN_SAMPLE,
                 self::GROUP_REPLACE_SAMPLE);
-        $this->assertEquals(array(
+        $this->assertEquals([
             0 => 'A1Gp8.1',
             1 => 'A1Gp4.1',
             2 => 'A1 sans gr8.2',
@@ -159,7 +159,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
             6 => 'A1 sans gr8.6',
             7 => 'A1 sans gr8.7',
             8 => 'A1 sans gr8.8',
-        ), $patterntransforms);
+        ], $patterntransforms);
     }
 
     /**
@@ -265,7 +265,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         hyperplanningsync::assign_group($this->hyperplanninglog, false);
         $this->assertFalse(groups_is_member($this->groups['A1Gp8.1']->id, $this->user->id));
         $this->assertFalse(groups_is_member($this->groups['A1Gp4.1']->id, $this->user->id));
-        $hyperplanninglog = $DB->get_record('tool_hyperplanningsync_log', array('id' => $this->hyperplanninglog->id));
+        $hyperplanninglog = $DB->get_record('tool_hyperplanningsync_log', ['id' => $this->hyperplanninglog->id]);
         // We should have added the user enrolment into the log.
         $this->assertStringContainsString('unable to add user to group \"A1Gp8.1\"', $hyperplanninglog->statustext);
         $this->assertStringContainsString('unable to add user to group \"A1Gp4.1\"', $hyperplanninglog->statustext);
@@ -280,7 +280,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         // in turn add the user to the group.
         $this->assertTrue(groups_is_member($this->groups['A1Gp8.1']->id, $this->user->id));
         $this->assertTrue(groups_is_member($this->groups['A1Gp4.1']->id, $this->user->id));
-        $hyperplanninglog = $DB->get_record('tool_hyperplanningsync_log', array('id' => $this->hyperplanninglog->id));
+        $hyperplanninglog = $DB->get_record('tool_hyperplanningsync_log', ['id' => $this->hyperplanninglog->id]);
         // We should have added the user enrolment into the log.
         $this->assertStringContainsString('Added user to group \"A1Gp8.1\"', $hyperplanninglog->statustext);
         $this->assertStringContainsString('Added user to group \"A1Gp4.1\"', $hyperplanninglog->statustext);
@@ -331,14 +331,14 @@ class tool_hyperplanningsync_test extends advanced_testcase {
         $this->assertFalse(groups_is_member($this->groups['A1Gp8.1']->id, $newuser->id));
         $this->assertFalse(groups_is_member($this->groups['A1Gp4.1']->id, $newuser->id));
         // Nothing yet in the log.
-        $hyperplanninglog = $DB->get_record('tool_hyperplanningsync_log', array('id' => $hyperplanninglogid));
+        $hyperplanninglog = $DB->get_record('tool_hyperplanningsync_log', ['id' => $hyperplanninglogid]);
         $this->assertStringNotContainsString(get_string('process:usercreated', 'tool_hyperplanningsync'),
             $hyperplanninglog->statustext);
         $this->runAdhocTasks();
         $this->assertTrue(cohort_is_member($this->cohorts[0]->id, $newuser->id));
         $this->assertTrue(groups_is_member($this->groups['A1Gp8.1']->id, $newuser->id));
         $this->assertTrue(groups_is_member($this->groups['A1Gp4.1']->id, $newuser->id));
-        $hyperplanninglog = $DB->get_record('tool_hyperplanningsync_log', array('id' => $hyperplanninglogid));
+        $hyperplanninglog = $DB->get_record('tool_hyperplanningsync_log', ['id' => $hyperplanninglogid]);
         // We should have added the user enrolment into the log.
         $this->assertStringContainsString(get_string('process:usercreated', 'tool_hyperplanningsync'),
             $hyperplanninglog->statustext);

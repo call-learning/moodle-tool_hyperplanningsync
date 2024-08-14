@@ -30,7 +30,7 @@ global $CFG, $OUTPUT, $DB, $PAGE;
 require_once($CFG->libdir . '/adminlib.php');
 require_once(dirname(__FILE__) . '/filter_form.php');
 
-$pageparams = array();
+$pageparams = [];
 
 $pageparams['importid'] = optional_param('importid', '', PARAM_ALPHANUM);
 $pageparams['idvalue'] = optional_param('idvalue', '', PARAM_TEXT);
@@ -41,7 +41,7 @@ $pageparams['status'] = optional_param('status', -1, PARAM_INT);
 $delete = optional_param('delete', '', PARAM_ALPHA);
 $confirm = optional_param('confirm', false, PARAM_BOOL);
 
-$pageoptions = array('pagelayout' => 'report');
+$pageoptions = ['pagelayout' => 'report'];
 
 $thisurl = new moodle_url('/admin/tool/hyperplanningsync/viewlog.php');
 
@@ -55,7 +55,7 @@ $progressbutton = new single_button(
 $viewprogress = $OUTPUT->render($progressbutton);
 
 $deletelastbutton = new single_button(
-    new moodle_url($thisurl, array('delete' => 'partial', 'sesskey' => sesskey())),
+    new moodle_url($thisurl, ['delete' => 'partial', 'sesskey' => sesskey()]),
     get_string('viewlog:deletepartial', 'tool_hyperplanningsync'),
 );
 $deletelastbutton->class = $deletelastbutton->class . ' btn-danger';
@@ -63,7 +63,7 @@ $deletelast = $OUTPUT->render($deletelastbutton);
 
 
 $deleteallbutton = new single_button(
-    new moodle_url($thisurl, array('delete' => 'all', 'sesskey' => sesskey())),
+    new moodle_url($thisurl, ['delete' => 'all', 'sesskey' => sesskey()]),
     get_string('viewlog:deleteall', 'tool_hyperplanningsync'),
 );
 $deleteallbutton->class = $deleteallbutton->class . ' btn-danger';
@@ -85,7 +85,7 @@ if (!empty($delete)) {
     if (!$confirm) {
         $confirmmsg = get_string('viewlog:deleteconfirm' . $delete, 'tool_hyperplanningsync');
         $continueurl = new moodle_url('/admin/tool/hyperplanningsync/viewlog.php',
-            array('confirm' => true, 'delete' => $delete, 'sesskey' => sesskey()));
+            ['confirm' => true, 'delete' => $delete, 'sesskey' => sesskey()]);
         $cancelurl = new moodle_url('/admin/tool/hyperplanningsync/viewlog.php');
 
         echo $OUTPUT->confirm($confirmmsg, $continueurl, $cancelurl);
@@ -108,7 +108,7 @@ if (!empty($delete)) {
                         FROM {tool_hyperplanningsync_log} a";
                 $importid = $DB->get_field_sql($sql);
 
-                $DB->delete_records_select('tool_hyperplanningsync_log', 'importid <> :importid', array('importid' => $importid));
+                $DB->delete_records_select('tool_hyperplanningsync_log', 'importid <> :importid', ['importid' => $importid]);
 
                 echo $OUTPUT->notification(get_string('viewlog:deletedpartial', 'tool_hyperplanningsync'), 'notifysuccess');
                 break;

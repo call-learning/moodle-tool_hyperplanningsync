@@ -66,12 +66,12 @@ class import_status extends \external_api {
                                                             'info' => new external_value(PARAM_TEXT, 'status text to display'),
                                                         ]
                                                     )
-                                                )
+                                                ),
                                         ]
-                                    )
+                                    ),
                             ]
                         )
-                        , 'all status, can be omitted', VALUE_OPTIONAL)
+                        , 'all status, can be omitted', VALUE_OPTIONAL),
             ]
         );
     }
@@ -104,7 +104,7 @@ class import_status extends \external_api {
                 $importname = $DB->get_field('tool_hyperplanningsync_info', 'importname', ['importid' => $importid]);
                 $fullstatus = (object) [
                     'importid' => $importid,
-                    'importname' => $importname ? $importname : ''
+                    'importname' => $importname ? $importname : '',
                 ];
             } else {
                 $fullstatus = $importidstats[$importid];
@@ -116,7 +116,7 @@ class import_status extends \external_api {
             $fullstatus->statuscounts[$stats->status] = (object) [
                 'statusid' => $stats->status,
                 'statusname' => get_string("status:{$stats->status}", 'tool_hyperplanningsync'),
-                'count' => $stats->statuscount
+                'count' => $stats->statuscount,
             ];
             $fullstatus->totalcount = array_reduce($fullstatus->statuscounts, function($acc, $status) {
                 return $acc + $status->count;
@@ -149,7 +149,7 @@ class import_status extends \external_api {
             return (object) []; // Empty object.
         }
         return (object) [
-            'status' => array_values($importidstats)
+            'status' => array_values($importidstats),
         ];
     }
 }

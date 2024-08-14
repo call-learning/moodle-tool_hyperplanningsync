@@ -46,9 +46,9 @@ class process_pending_users extends scheduled_task {
                 LEFT JOIN {user} u ON u.email = l.email
                 WHERE l.status = :statuspending";
 
-        $params = array(
-            'statuspending' => hyperplanningsync::STATUS_PENDING
-        );
+        $params = [
+            'statuspending' => hyperplanningsync::STATUS_PENDING,
+        ];
 
         if (!$imports = $DB->get_records_sql($sql, $params)) {
             return true;

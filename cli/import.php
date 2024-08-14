@@ -34,18 +34,18 @@ ini_set('display_errors', '1');
 ini_set('log_errors', '1');
 
 list($options, $unrecognised) = cli_get_params(
-    array(
+    [
         'getimportids' => false,
         'runimportid' => '',
         'removecohorts' => false,
         'removegroups' => false,
-        'help' => false
-    ),
-    array(
+        'help' => false,
+    ],
+    [
         'h' => 'help',
         'i' => 'getimportids',
         'r' => 'runimportid',
-    )
+    ]
 );
 
 // Checking run.php CLI script usage.

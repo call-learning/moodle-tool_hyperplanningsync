@@ -32,14 +32,14 @@ ini_set('display_errors', '1');
 ini_set('log_errors', '1');
 
 list($options, $unrecognised) = cli_get_params(
-    array(
+    [
         'gradehistoryyears' => 5,
-        'help' => false
-    ),
-    array(
+        'help' => false,
+    ],
+    [
         'h' => 'help',
         'g' => 'gradehistoryyears',
-    )
+    ]
 );
 
 // Checking run.php CLI script usage.
@@ -69,7 +69,7 @@ $tables = [
     'grade_categories_history',
     'grade_items_history',
     'grade_grades_history',
-    'scale_history'
+    'scale_history',
 ];
 global $DB;
 foreach ($tables as $table) {

@@ -44,7 +44,7 @@ class log_table extends table_sql {
     public function __construct($uniqueid, $filterparams, $currenturl) {
         parent::__construct($uniqueid);
 
-        $columns = array(
+        $columns = [
             'importid',
             'lineid',
             'fullname',
@@ -57,9 +57,9 @@ class log_table extends table_sql {
             'createdbyid',
             'timecreated',
             'timemodified',
-        );
+        ];
 
-        $headers = array();
+        $headers = [];
         foreach ($columns as $column) {
             $headers[] = get_string('report:' . $column, 'tool_hyperplanningsync');
         }
@@ -89,8 +89,8 @@ class log_table extends table_sql {
      */
     protected function set_sql_from_filters(array $filters): void {
         global $DB;
-        $params = array();
-        $wheres = array();
+        $params = [];
+        $wheres = [];
 
         $idvaluefield = "
         CASE
@@ -148,8 +148,8 @@ class log_table extends table_sql {
     public function get_sql_where(): array {
         global $DB;
 
-        $conditions = array();
-        $params = array();
+        $conditions = [];
+        $params = [];
 
         if (isset($this->columns['fullname'])) {
             static $i = 0;
@@ -165,7 +165,7 @@ class log_table extends table_sql {
             }
         }
 
-        return array(implode(" AND ", $conditions), $params);
+        return [implode(" AND ", $conditions), $params];
     }
 
     /**
@@ -283,10 +283,10 @@ class log_table extends table_sql {
             return $name;
         }
         if ($COURSE->id == SITEID) {
-            $profileurl = new moodle_url('/user/profile.php', array('id' => $userid));
+            $profileurl = new moodle_url('/user/profile.php', ['id' => $userid]);
         } else {
             $profileurl = new moodle_url('/user/view.php',
-                array('id' => $userid, 'course' => $COURSE->id));
+                ['id' => $userid, 'course' => $COURSE->id]);
         }
         if ($this->is_downloading()) {
             return $name;

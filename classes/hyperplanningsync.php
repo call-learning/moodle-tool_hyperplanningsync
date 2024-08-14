@@ -74,7 +74,7 @@ class hyperplanningsync {
         // Get unprocessed import ids.
         return $DB->get_records_sql('SELECT importid, timecreated
                 FROM {tool_hyperplanningsync_log} WHERE status = :statusinited GROUP BY importid', [
-            'statusinited' => self::STATUS_INITED
+            'statusinited' => self::STATUS_INITED,
         ]);
     }
 
@@ -96,10 +96,10 @@ class hyperplanningsync {
         core_php_time_limit::raise(HOURSECS);
         raise_memory_limit(MEMORY_EXTRA);
 
-        $params = array(
+        $params = [
             'importid' => $importid,
             'status' => self::STATUS_INITED,
-        );
+        ];
 
         if (!empty($logid)) {
             // Process one record only - used by the observer.
@@ -162,7 +162,7 @@ class hyperplanningsync {
      */
     public static function update_status_text(int $logid, string $newstatus): void {
         global $DB, $USER;
-        $importlog = $DB->get_record('tool_hyperplanningsync_log', array('id' => $logid));
+        $importlog = $DB->get_record('tool_hyperplanningsync_log', ['id' => $logid]);
         $importlog->statustext = self::build_new_status_text($importlog->statustext, $newstatus);
         $importlog->timemodified = time();
         $importlog->usermodified = $USER->id;
@@ -194,7 +194,7 @@ class hyperplanningsync {
      */
     public static function set_status_done(int $logid): void {
         global $DB, $USER;
-        $importlog = $DB->get_record('tool_hyperplanningsync_log', array('id' => $logid));
+        $importlog = $DB->get_record('tool_hyperplanningsync_log', ['id' => $logid]);
         $importlog->status = self::STATUS_DONE;
         $importlog->timemodified = time();
         $importlog->usermodified = $USER->id;
@@ -214,7 +214,7 @@ class hyperplanningsync {
         // Add to cohort - This will trigger an event to enrol the user too.
         self::trigger_cohort_add_member($row->cohortid, $row->userid);
         // Update status.
-        $newcohort = $DB->get_record('cohort', array('id' => $row->cohortid), 'id, name, idnumber');
+        $newcohort = $DB->get_record('cohort', ['id' => $row->cohortid], 'id, name, idnumber');
         $newstatus = get_string('process:addedcohort', 'tool_hyperplanningsync', $newcohort);
         self::update_status_text($row->id, $newstatus);
         // Remove existing cohorts assignments.
@@ -224,10 +224,10 @@ class hyperplanningsync {
                     JOIN {cohort} c ON c.id = cm.cohortid
                     WHERE cm.userid = :userid
                     AND c.id <> :cohortid";
-            $params = array(
+            $params = [
                 'userid' => $row->userid,
-                'cohortid' => $row->cohortid
-            );
+                'cohortid' => $row->cohortid,
+            ];
             if ($cohorts = $DB->get_records_sql($sql, $params)) {
                 foreach ($cohorts as $cohort) {
                     self::trigger_cohort_remove_member($cohort->id, $row->userid);
@@ -306,7 +306,7 @@ class hyperplanningsync {
                 $newstatus = get_string('process:notenrolled', 'tool_hyperplanningsync', $newgroup);
                 self::update_status_text($row->id, $newstatus);
                 if (!$DB->record_exists('tool_hyperplanningsync_group',
-                    array('userid' => $row->userid, 'courseid' => $newgroup->courseid, 'newgroupid' => $newgroup->groupid))) {
+                    ['userid' => $row->userid, 'courseid' => $newgroup->courseid, 'newgroupid' => $newgroup->groupid])) {
                     global $USER;
                     $dataobject = (object) [
                         'courseid' => $newgroup->courseid,
@@ -315,7 +315,7 @@ class hyperplanningsync {
                         'logid' => $row->id,
                         'usermodified' => $USER->id,
                         'timecreated' => time(),
-                        'timemodified' => time()
+                        'timemodified' => time(),
                     ];
                     // This will be dealt later when user registers.
                     $DB->insert_record('tool_hyperplanningsync_group', $dataobject);
@@ -377,7 +377,7 @@ class hyperplanningsync {
         $importfields[$moodleidfield] = $importfields['idfield'];
         unset($importfields['idfield']);
 
-        $fields = array();
+        $fields = [];
 
         // Check the fields in the csv are valid.
         foreach ($columns as $column) {
@@ -418,7 +418,7 @@ class hyperplanningsync {
         $importfields = array_flip($importfields);
 
         // Import in batches.
-        $newrows = array();
+        $newrows = [];
 
         // Column header is first line.
         $linenum = 1;
@@ -428,7 +428,7 @@ class hyperplanningsync {
             $linenum++;
 
             // We init here safe values as insert_records does not like to have missing columns.
-            $newrow = array(
+            $newrow = [
                 'importid' => $importid,
                 'lineid' => $linenum,
                 'status' => 0,
@@ -445,7 +445,7 @@ class hyperplanningsync {
                 'othergroups' => '',
                 'cohortid' => '',
                 'groupscsv' => '',
-            );
+            ];
 
             foreach ($fields as $key => $csvfield) {
                 if (!empty($importfields[$csvfield])) {
@@ -461,7 +461,7 @@ class hyperplanningsync {
                 }
             }
 
-            if (!$userid = $DB->get_field('user', 'id', array($moodleidfield => $newrow[$moodleidfield]))) {
+            if (!$userid = $DB->get_field('user', 'id', [$moodleidfield => $newrow[$moodleidfield]])) {
                 $newrow['statustext'] = self::build_new_status_text(
                     $newrow['statustext'],
                     get_string('error:nouser', 'tool_hyperplanningsync')
@@ -478,7 +478,7 @@ class hyperplanningsync {
                 FROM {cohort} c
                 WHERE CASE WHEN c.idnumber > '' THEN c.idnumber ELSE c.name END = :idnumber";
 
-            if (!$cohortid = $DB->get_field_sql($sql, array('idnumber' => $newrow['cohort']))) {
+            if (!$cohortid = $DB->get_field_sql($sql, ['idnumber' => $newrow['cohort']])) {
                 $newrow['statustext'] = self::build_new_status_text(
                     $newrow['statustext'],
                     get_string('error:nocohort', 'tool_hyperplanningsync', $newrow['cohort'])
@@ -498,7 +498,7 @@ class hyperplanningsync {
                     WHERE CASE WHEN g.idnumber > '' THEN g.idnumber ELSE g.name END = :groupidnumber";
 
             foreach ($groups as $group) {
-                if (!$DB->record_exists_sql($sql, array('groupidnumber' => $group))) {
+                if (!$DB->record_exists_sql($sql, ['groupidnumber' => $group])) {
                     $newrow['statustext'] = self::build_new_status_text(
                         $newrow['statustext'],
                         get_string('error:nogroup', 'tool_hyperplanningsync', $group)
@@ -510,11 +510,11 @@ class hyperplanningsync {
                 }
 
                 if ($cohortid) {
-                    $params = array(
+                    $params = [
                         'enroletype' => 'cohort',
                         'cohortid' => $cohortid,
-                        'groupidnumber' => $group
-                    );
+                        'groupidnumber' => $group,
+                    ];
 
                     // Check if there is a cohort + course + group combination.
                     if (!$DB->record_exists_sql($sql, $params)) {
@@ -537,7 +537,7 @@ class hyperplanningsync {
             if (count($newrows) >= 250) { // BATCH_INSERT_MAX_ROW_COUNT.
                 $DB->insert_records('tool_hyperplanningsync_log', $newrows);
                 unset($newrows);
-                $newrows = array();
+                $newrows = [];
             }
 
         }
@@ -573,12 +573,12 @@ class hyperplanningsync {
         $config = get_config('tool_hyperplanningsync');
 
         // Use the config names if they exist.
-        $fields = array(
+        $fields = [
             'idfield' => !empty($config->field_idfield) ? $config->field_idfield : 'e-mail',
             'cohort' => !empty($config->field_cohort) ? $config->field_cohort : 'Promotions',
             'maingroup' => !empty($config->field_maingroup) ? $config->field_maingroup : 'TD',
             'othergroups' => !empty($config->field_othergroups) ? $config->field_othergroups : 'Regroupements',
-        );
+        ];
 
         if (!empty($formdata)) {
             // Override with the form names.
@@ -603,7 +603,7 @@ class hyperplanningsync {
      * @throws coding_exception
      */
     public static function clean_groups(array $row, string $pattern, string $replacement): array {
-        $groups = array();
+        $groups = [];
 
         if (!empty($row['maingroup'])) {
             $groups[] = $row['maingroup'];
@@ -658,20 +658,20 @@ class hyperplanningsync {
      */
     private static function trigger_cohort_add_member(int $cohortid, int $userid): void {
         global $DB;
-        if (!$DB->record_exists('cohort_members', array('cohortid' => $cohortid, 'userid' => $userid))) {
+        if (!$DB->record_exists('cohort_members', ['cohortid' => $cohortid, 'userid' => $userid])) {
             $record = new stdClass();
             $record->cohortid = $cohortid;
             $record->userid = $userid;
             $record->timeadded = time();
             $DB->insert_record('cohort_members', $record);
         }
-        $cohort = $DB->get_record('cohort', array('id' => $cohortid), '*', MUST_EXIST);
+        $cohort = $DB->get_record('cohort', ['id' => $cohortid], '*', MUST_EXIST);
 
-        $event = \core\event\cohort_member_added::create(array(
+        $event = \core\event\cohort_member_added::create([
             'context' => \context::instance_by_id($cohort->contextid),
             'objectid' => $cohortid,
             'relateduserid' => $userid,
-        ));
+        ]);
         $event->add_record_snapshot('cohort', $cohort);
         $event->trigger();
     }
@@ -683,7 +683,7 @@ class hyperplanningsync {
      */
     public static function get_status_names(): array {
         $allstatus = [
-            self::STATUS_DONE, self::STATUS_INITED, self::STATUS_PENDING, self::STATUS_SKIPPED
+            self::STATUS_DONE, self::STATUS_INITED, self::STATUS_PENDING, self::STATUS_SKIPPED,
         ];
         $statusname = [];
         foreach ($allstatus as $status) {
