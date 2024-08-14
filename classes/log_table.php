@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 namespace tool_hyperplanningsync;
 
+use context_system;
 use core_user;
 use html_writer;
 use moodle_url;
@@ -123,11 +124,12 @@ class log_table extends table_sql {
             $where = $where . ' AND ' . implode(' AND ', $wheres);
         }
 
-        $usernamefields = get_all_user_name_fields(true, 'u');
-        $createdusernamefields = get_all_user_name_fields(true, 'createdby', null, 'createdby');
-        $fields = "l.*,
-                {$usernamefields},
-                {$createdusernamefields},
+        $userfields = \core_user\fields::for_identity(context_system::instance())->with_name()->excluding('id');
+        $usernamefields = $userfields->get_sql('u');
+        $createdusernamefields = $userfields->get_sql('createdby');
+        $fields = "l.*
+                {$usernamefields->selects}
+                {$createdusernamefields->selects},
                 {$idvaluefield} AS idvalue,
                 u.id as userid,
                 u.firstname AS firstname,
@@ -135,9 +137,11 @@ class log_table extends table_sql {
                 c.name AS cohortname";
         $from = "{tool_hyperplanningsync_log} l
                 LEFT JOIN {user} u ON u.id = l.userid
+                {$usernamefields->joins}
                 LEFT JOIN {user} createdby ON createdby.id = l.createdbyid
+                {$createdusernamefields->joins}
                 LEFT JOIN {cohort} c ON c.id = l.cohortid";
-        $this->set_sql($fields, $from, $where, $params);
+        $this->set_sql($fields, $from, $where, array_merge($params, $usernamefields->params, $createdusernamefields->params));
     }
 
     /**
