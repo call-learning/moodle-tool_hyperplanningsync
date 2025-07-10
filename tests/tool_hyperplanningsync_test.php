@@ -37,7 +37,7 @@ use tool_hyperplanningsync\task\hyperplanning_sync_task;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \tool_hyperplanningsync\hyperplanningsync
  */
-class tool_hyperplanningsync_test extends advanced_testcase {
+final class tool_hyperplanningsync_test extends advanced_testcase {
     /**
      * Pattern
      */
@@ -66,6 +66,16 @@ class tool_hyperplanningsync_test extends advanced_testcase {
      * @var object $hyperplanninglog
      */
     protected $hyperplanninglog = null;
+
+    /**
+     * @var \stdClass|null $course
+     */
+    protected $course = null;
+
+    /**
+     * @var array $groups
+     */
+    protected $groups = [];
 
     /**
      * Setup
@@ -131,7 +141,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
      *
      * @covers \tool_hyperplanningsync\hyperplanningsync::clean_groups
      */
-    public function test_group_transform() {
+    public function test_group_transform(): void {
         $this->resetAfterTest();
 
         $simpletransform = hyperplanningsync::clean_groups((array) $this->hyperplanninglog, '', '');
@@ -167,7 +177,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
      *
      * @covers \tool_hyperplanningsync\hyperplanningsync::assign_cohort
      */
-    public function test_assign_cohort_simple() {
+    public function test_assign_cohort_simple(): void {
         $this->resetAfterTest();
         hyperplanningsync::assign_cohort($this->hyperplanninglog, false);
         $this->runAdhocTasks(hyperplanning_sync_task::class);
@@ -180,7 +190,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
      *
      * @covers \tool_hyperplanningsync\hyperplanningsync::assign_cohort
      */
-    public function test_assign_cohort_already_assigned() {
+    public function test_assign_cohort_already_assigned(): void {
         $this->resetAfterTest();
         cohort_add_member($this->cohorts[1]->id, $this->user->id); // User is in A2.
 
@@ -195,7 +205,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
      *
      * @covers \tool_hyperplanningsync\hyperplanningsync::assign_cohort
      */
-    public function test_assign_cohort_with_enrolment() {
+    public function test_assign_cohort_with_enrolment(): void {
         $this->resetAfterTest();
         cohort_add_member($this->cohorts[1]->id, $this->user->id); // User is in A2 and enrolled in another course.
         $oldcourse = $this->getDataGenerator()->create_course();
@@ -235,7 +245,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
      *
      * @covers \tool_hyperplanningsync\hyperplanningsync::assign_group
      */
-    public function test_assign_group_simple() {
+    public function test_assign_group_simple(): void {
         $this->resetAfterTest();
 
         // User is enrolled via cohort in the course.
@@ -257,7 +267,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
      * @covers \tool_hyperplanningsync\hyperplanningsync::assign_group
      *
      */
-    public function test_assign_group_simple_no_instance() {
+    public function test_assign_group_simple_no_instance(): void {
         global $DB;
         $this->resetAfterTest();
         $this->create_cohort_enrolment_for_course($this->course, $this->cohorts[0]->id);
@@ -291,7 +301,7 @@ class tool_hyperplanningsync_test extends advanced_testcase {
      *
      * @covers \tool_hyperplanningsync\hyperplanningsync::process
      */
-    public function test_insert_cohort_after_user_creation() {
+    public function test_insert_cohort_after_user_creation(): void {
         global $DB;
         $this->resetAfterTest();
         set_config('sync_new_users_enabled', true, 'tool_hyperplanningsync');

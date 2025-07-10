@@ -28,7 +28,7 @@ use tool_hyperplanningsync\hyperplanningsync;
  * @package    tool_hyperplanningsync
  * @copyright  2020 CALL Learning
  * @author     Laurent David (laurent@call-learning.fr)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class process_import_for_new_user extends adhoc_task {
     /**

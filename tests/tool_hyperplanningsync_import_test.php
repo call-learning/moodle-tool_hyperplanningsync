@@ -37,7 +37,7 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \tool_hyperplanningsync\hyperplanningsync
  */
-class tool_hyperplanningsync_import_test extends advanced_testcase {
+final class tool_hyperplanningsync_import_test extends advanced_testcase {
     /**
      * Maximum users
      */
@@ -100,7 +100,7 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
      *
      * @covers \tool_hyperplanningsync\hyperplanningsync::do_import
      */
-    public function test_import_sample_prechecks() {
+    public function test_import_sample_prechecks(): void {
         global $DB;
         $this->resetAfterTest();
 
@@ -167,7 +167,7 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
      *
      * @covers \tool_hyperplanningsync\hyperplanningsync::process
      */
-    public function test_import_sample() {
+    public function test_import_sample(): void {
         global $DB;
         $this->resetAfterTest();
         // Prepare.
@@ -198,7 +198,7 @@ class tool_hyperplanningsync_import_test extends advanced_testcase {
      *
      * @covers \tool_hyperplanningsync\hyperplanningsync::process
      */
-    public function test_import_sample_with_preassigned() {
+    public function test_import_sample_with_preassigned(): void {
         global $DB;
         $this->resetAfterTest();
         // Prepare.

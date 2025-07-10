@@ -92,7 +92,6 @@ class hyperplanningsync {
         ?object $progressbar = null, ?int $logid = null, ?bool $deferred = true): void {
         global $DB;
         // Raise time limit so we can process the full set.
-        // TODO: Use a adhoc task.
         core_php_time_limit::raise(HOURSECS);
         raise_memory_limit(MEMORY_EXTRA);
 
@@ -565,11 +564,11 @@ class hyperplanningsync {
     /**
      * Get the field names
      *
-     * @param stdClass $formdata
+     * @param stdClass|null $formdata
      * @return array
      * @throws dml_exception
      */
-    public static function get_fields(stdClass $formdata = null): array {
+    public static function get_fields(?stdClass $formdata = null): array {
         $config = get_config('tool_hyperplanningsync');
 
         // Use the config names if they exist.
