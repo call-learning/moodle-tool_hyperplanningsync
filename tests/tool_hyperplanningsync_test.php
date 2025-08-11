@@ -353,4 +353,21 @@ final class tool_hyperplanningsync_test extends advanced_testcase {
         $this->assertStringContainsString(get_string('process:usercreated', 'tool_hyperplanningsync'),
             $hyperplanninglog->statustext);
     }
+
+    /**
+     * Tests build_new_status_text() function.
+     *
+     * @covers \tool_hyperplanningsync\hyperplanningsync::build_new_status_text
+     */
+    public function test_build_status_text(): void {
+        $this->resetAfterTest();
+        $this->assertStringContainsString(
+            '"info":"course"',
+            hyperplanningsync::build_new_status_text('[{"status": "status text"}]', 'course')
+        );
+        $this->assertStringContainsString(
+            '"info":"cohort"',
+            hyperplanningsync::build_new_status_text(null, 'cohort')
+        );
+    }
 }

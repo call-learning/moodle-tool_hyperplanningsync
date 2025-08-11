@@ -171,11 +171,11 @@ class hyperplanningsync {
     /**
      * Build new status text
      *
-     * @param string $currentstatustext
+     * @param ?string $currentstatustext
      * @param string $newelement
      * @return string
      */
-    public static function build_new_status_text(string $currentstatustext, string $newelement): string {
+    public static function build_new_status_text(?string $currentstatustext, string $newelement): string {
         if (empty($currentstatustext) || json_decode($currentstatustext) === false) {
             $currentstatustext = '[]';
         }
